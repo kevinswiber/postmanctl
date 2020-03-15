@@ -13,13 +13,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package config
 
+// Config is a struct representation of a postmanctl config file.
 type Config struct {
-	CurrentContext string             `mapstructure:"current-context"`
+	CurrentContext string             `mapstructure:"currentContext"`
 	Contexts       map[string]Context `mapstructure:"contexts"`
 }
 
+// Context models the current Postman API context as a struct.
 type Context struct {
-	APIKey string `mapstructure:"apiKey"`
+	APIKey  string `mapstructure:"apiKey"`
+	APIRoot string `mapstructure:"apiRoot"`
 }

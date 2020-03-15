@@ -1,0 +1,6 @@
+currentContext: personal # Required
+contexts:
+  personal:
+    apiKey: XXXXXXXXXXXXXX # Required
+    apiRoot: https://api.postman.com # Optional
+    workspace: 12345-67890-12345-67890 # Optional

@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package cmd
 
 import (
@@ -62,7 +63,7 @@ func init() {
 			Use:     "environments",
 			Aliases: []string{"environment", "env"},
 			RunE: func(cmd *cobra.Command, args []string) error {
-				url := "https://api.getpostman.com/environments"
+				url := configContext.APIRoot + "/environments"
 				method := "GET"
 
 				client := &http.Client{}
@@ -87,7 +88,7 @@ func init() {
 				w := tabwriter.NewWriter(os.Stdout, 0, 8, 2, ' ', 0)
 				fmt.Fprintln(w, "ID\tNAME\tOWNER")
 				for _, env := range e.Environments {
-					fmt.Fprintf(w, "%s\t%s\t%s\n", env.Id, env.Name, env.Owner)
+					fmt.Fprintf(w, "%s\t%s\t%s\n", env.ID, env.Name, env.Owner)
 				}
 				w.Flush()
 
@@ -117,8 +118,36 @@ func init() {
 		},
 		&cobra.Command{
 			Use: "user",
-			Run: func(cmd *cobra.Command, args []string) {
-				fmt.Println("get user")
+			RunE: func(cmd *cobra.Command, args []string) error {
+				url := configContext.APIRoot + "/me"
+				method := "GET"
+
+				client := &http.Client{}
+				req, err := http.NewRequest(method, url, nil)
+
+				if err != nil {
+					return err
+				}
+
+				req.Header.Add("X-Api-Key", configContext.APIKey)
+
+				res, err := client.Do(req)
+				if err != nil {
+					return err
+				}
+
+				defer res.Body.Close()
+				body, err := ioutil.ReadAll(res.Body)
+
+				var u resources.UserResponse
+				json.Unmarshal(body, &u)
+
+				w := tabwriter.NewWriter(os.Stdout, 0, 8, 2, ' ', 0)
+				fmt.Fprintln(w, "ID")
+				fmt.Fprintf(w, "%d\n", u.User.ID)
+				w.Flush()
+
+				return nil
 			},
 		},
 		&cobra.Command{
@@ -150,7 +179,7 @@ func init() {
 }
 
 func getAllCollections(w *tabwriter.Writer) error {
-	url := "https://api.getpostman.com/collections"
+	url := configContext.APIRoot + "/collections"
 	method := "GET"
 
 	client := &http.Client{}
@@ -175,7 +204,7 @@ func getAllCollections(w *tabwriter.Writer) error {
 
 	fmt.Fprintln(w, "ID\tNAME")
 	for _, col := range c.Collections {
-		fmt.Fprintf(w, "%s\t%s\n", col.Id, col.Name)
+		fmt.Fprintf(w, "%s\t%s\n", col.ID, col.Name)
 	}
 	w.Flush()
 
@@ -183,7 +212,7 @@ func getAllCollections(w *tabwriter.Writer) error {
 }
 
 func getSingleCollection(w *tabwriter.Writer, id string) error {
-	url := "https://api.getpostman.com/collections/" + id
+	url := configContext.APIRoot + "/collections/" + id
 	method := "GET"
 
 	client := &http.Client{}
@@ -207,7 +236,7 @@ func getSingleCollection(w *tabwriter.Writer, id string) error {
 	json.Unmarshal(body, &cRes)
 
 	fmt.Fprintln(w, "ID\tNAME")
-	fmt.Fprintf(w, "%s\t%s\n", cRes.Collection.Info.Id, cRes.Collection.Info.Name)
+	fmt.Fprintf(w, "%s\t%s\n", cRes.Collection.Info.ID, cRes.Collection.Info.Name)
 	w.Flush()
 
 	return nil

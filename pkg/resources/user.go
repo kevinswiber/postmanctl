@@ -16,16 +16,14 @@ limitations under the License.
 
 package resources
 
-// EnvironmentList represents the top-level environments response from the
+// UserResponse represents the top-level struct of a user response in the
 // Postman API.
-type EnvironmentList struct {
-	Environments []EnvironmentListItem `json:"environments"`
+type UserResponse struct {
+	User User `json:"user"`
 }
 
-// EnvironmentListItem represents a single item in an EnvironmentListResponse.
-type EnvironmentListItem struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Owner string `json:"owner"`
-	UID   string `json:"uid"`
+// User represents the user info associated with a user request in the
+// Postman API.
+type User struct {
+	ID int `json:"id"`
 }

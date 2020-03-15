@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package cmd
 
 import (
@@ -54,7 +55,7 @@ func init() {
 					return errors.New("Please specify a collection ID")
 				}
 
-				url := "https://api.getpostman.com/collections/" + args[0]
+				url := configContext.APIRoot + "/collections/" + args[0]
 				method := "GET"
 
 				client := &http.Client{}
@@ -78,7 +79,7 @@ func init() {
 
 				w := tabwriter.NewWriter(os.Stdout, 0, 8, 2, ' ', 0)
 				fmt.Fprintln(w, "ID\tNAME")
-				fmt.Fprintf(w, "%s\t%s\n", cRes.Collection.Info.Id, cRes.Collection.Info.Name)
+				fmt.Fprintf(w, "%s\t%s\n", cRes.Collection.Info.ID, cRes.Collection.Info.Name)
 				w.Flush()
 
 				return nil

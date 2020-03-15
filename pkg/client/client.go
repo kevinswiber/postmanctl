@@ -14,18 +14,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package resources
+package client
 
-// EnvironmentList represents the top-level environments response from the
-// Postman API.
-type EnvironmentList struct {
-	Environments []EnvironmentListItem `json:"environments"`
+import (
+	"net/http"
+	"net/url"
+	"strings"
+)
+
+// APIClient allows for storing a base URL and containing common functionality.
+type APIClient struct {
+	base   *url.URL
+	Client *http.Client
 }
 
-// EnvironmentListItem represents a single item in an EnvironmentListResponse.
-type EnvironmentListItem struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Owner string `json:"owner"`
-	UID   string `json:"uid"`
+// NewAPIClient creates a new instance of the Postman APIClient.
+func NewAPIClient(baseURL *url.URL, client *http.Client) (*APIClient, error) {
+	base := *baseURL
+	if !strings.HasSuffix(base.Path, "/") {
+		base.Path += "/"
+	}
+	base.RawQuery = ""
+	base.Fragment = ""
+
+	return &APIClient{
+		base:   &base,
+		Client: client,
+	}, nil
 }

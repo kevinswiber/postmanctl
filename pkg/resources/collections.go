@@ -13,23 +13,30 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package resources
 
+// CollectionList is the top-level struct represenation of a collection
+// list response in the Postman API.
 type CollectionList struct {
 	Collections []CollectionListItem `json:"collections"`
 }
 
+// CollectionListItem represents a single item in a CollectionListResponse.
 type CollectionListItem struct {
-	Id    string `json:"id"`
+	ID    string `json:"id"`
 	Name  string `json:"name"`
 	Owner string `json:"owner"`
-	Uid   string `json:"uid"`
+	UID   string `json:"uid"`
 }
 
+// CollectionResponse is the top-level struct representation of a collection
+// response from the Postman API.
 type CollectionResponse struct {
 	Collection Collection `json:"collection"`
 }
 
+// Collection is a single item representation of the CollectionResponse.
 type Collection struct {
 	Info      CollectionInfo   `json:"info"`
 	Items     []CollectionItem `json:"item"`
@@ -37,39 +44,48 @@ type Collection struct {
 	Variables []Variable       `json:"variable,omitempty"`
 }
 
+// CollectionInfo contains metadata associated with a Collection.
 type CollectionInfo struct {
-	Id     string `json:"_postman_id"`
+	ID     string `json:"_postman_id"`
 	Name   string `json:"name"`
 	Schema string `json:"schema"`
 }
 
+// CollectionItem is a single unit of a collection entity.
 type CollectionItem struct {
-	Id                      string           `json:"_postman_id"`
+	ID                      string           `json:"_postman_id"`
 	Name                    string           `json:"name"`
-	Items                   []CollectionItem `json:"item`
+	Items                   []CollectionItem `json:"item"`
 	Events                  []Event          `json:"event"`
 	ProtocolProfileBehavior struct{}         `json:"protocolProfileBehavior"`
 	Request                 Request          `json:"request"`
 	Responses               []Response       `json:"response"`
 }
 
+// Event represents a pre-request or test script.
 type Event struct {
 	Listen string `json:"listen"` /* prerequest, test */
 	Script Script `json:"script"`
 }
 
+// Variable is a representation of a Postman variable.
 type Variable struct {
-	Id    string `json:"id"`
+	ID    string `json:"id"`
 	Key   string `json:"key"`
 	Value string `json:"value"`
 	Type  string `json:"type"`
 }
 
+// Script is a representation of a pre-request or test script in the
+// Postman API.
 type Script struct {
-	Id   string   `json:"id"`
+	ID   string   `json:"id"`
 	Type string   `json:"type"`
 	Exec []string `json:"exec"`
 }
 
+// Request contains HTTP request info associated with a CollectionItem.
 type Request struct{}
+
+// Response contains HTTP response info associated with a CollectionItem.
 type Response struct{}

@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package cmd
 
 import (
@@ -88,6 +89,9 @@ func initConfig() {
 
 	if val, ok := cfg.Contexts[cfg.CurrentContext]; ok {
 		configContext = val
+		if len(configContext.APIRoot) == 0 {
+			configContext.APIRoot = "https://api.postman.com"
+		}
 	} else {
 		fmt.Fprintf(os.Stderr, "context is not configured, %s\n", cfg.CurrentContext)
 		os.Exit(1)
