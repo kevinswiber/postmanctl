@@ -13,10 +13,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package main
 
-import "github.com/kevinswiber/postmanctl/cmd"
+package printers
 
-func main() {
-	cmd.Execute()
+import (
+	"io"
+
+	"github.com/kevinswiber/postmanctl/pkg/resources"
+)
+
+// ResourcePrinter writes an output of API resources.
+type ResourcePrinter interface {
+	Print(resources.Resource, io.Writer)
+}
+
+// PrintOptions holds various options used in ResourcePrinters.
+type PrintOptions struct {
+	NoHeaders bool
 }

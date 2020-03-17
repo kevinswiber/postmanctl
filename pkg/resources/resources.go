@@ -16,26 +16,11 @@ limitations under the License.
 
 package resources
 
-import "encoding/json"
+// ResourceKind represents the type of the Postman API entity.
+type ResourceKind string
 
-// UserResponse represents the top-level struct of a user response in the
-// Postman API.
-type UserResponse struct {
-	User User `json:"user"`
-}
-
-// User represents the user info associated with a user request in the
-// Postman API.
-type User struct {
-	ID json.Number `json:"id"`
-}
-
-// GetResourceKind returns a string representation of the resource type.
-func (u User) GetResourceKind() ResourceKind {
-	return "User"
-}
-
-// GetPrintColumns returns a list of fields to print for this resource output.
-func (u User) GetPrintColumns() []string {
-	return []string{"ID"}
+// Resource represents a Postman API entity.
+type Resource interface {
+	GetResourceKind() ResourceKind
+	GetPrintColumns() []string
 }

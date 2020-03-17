@@ -25,11 +25,12 @@ import (
 // APIClient allows for storing a base URL and containing common functionality.
 type APIClient struct {
 	base   *url.URL
+	APIKey string
 	Client *http.Client
 }
 
 // NewAPIClient creates a new instance of the Postman APIClient.
-func NewAPIClient(baseURL *url.URL, client *http.Client) (*APIClient, error) {
+func NewAPIClient(baseURL *url.URL, apiKey string, client *http.Client) (*APIClient, error) {
 	base := *baseURL
 	if !strings.HasSuffix(base.Path, "/") {
 		base.Path += "/"
@@ -39,6 +40,7 @@ func NewAPIClient(baseURL *url.URL, client *http.Client) (*APIClient, error) {
 
 	return &APIClient{
 		base:   &base,
+		APIKey: apiKey,
 		Client: client,
 	}, nil
 }

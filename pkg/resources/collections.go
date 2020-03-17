@@ -16,9 +16,9 @@ limitations under the License.
 
 package resources
 
-// CollectionList is the top-level struct represenation of a collection
+// CollectionListResponse is the top-level struct represenation of a collection
 // list response in the Postman API.
-type CollectionList struct {
+type CollectionListResponse struct {
 	Collections []CollectionListItem `json:"collections"`
 }
 
@@ -28,6 +28,16 @@ type CollectionListItem struct {
 	Name  string `json:"name"`
 	Owner string `json:"owner"`
 	UID   string `json:"uid"`
+}
+
+// GetResourceKind returns a string representation of the resource type.
+func (c CollectionListItem) GetResourceKind() ResourceKind {
+	return "CollectionListItem"
+}
+
+// GetPrintColumns returns a list of fields to print for this resource output.
+func (c CollectionListItem) GetPrintColumns() []string {
+	return []string{"ID", "Name"}
 }
 
 // CollectionResponse is the top-level struct representation of a collection
@@ -49,6 +59,16 @@ type CollectionInfo struct {
 	ID     string `json:"_postman_id"`
 	Name   string `json:"name"`
 	Schema string `json:"schema"`
+}
+
+// GetResourceKind returns a string representation of the resource type.
+func (c CollectionInfo) GetResourceKind() ResourceKind {
+	return "CollectionInfo"
+}
+
+// GetPrintColumns returns a list of fields to print for this resource output.
+func (c CollectionInfo) GetPrintColumns() []string {
+	return []string{"ID", "Name"}
 }
 
 // CollectionItem is a single unit of a collection entity.

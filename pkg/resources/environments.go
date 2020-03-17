@@ -16,9 +16,9 @@ limitations under the License.
 
 package resources
 
-// EnvironmentList represents the top-level environments response from the
+// EnvironmentListResponse represents the top-level environments response from the
 // Postman API.
-type EnvironmentList struct {
+type EnvironmentListResponse struct {
 	Environments []EnvironmentListItem `json:"environments"`
 }
 
@@ -28,4 +28,45 @@ type EnvironmentListItem struct {
 	Name  string `json:"name"`
 	Owner string `json:"owner"`
 	UID   string `json:"uid"`
+}
+
+// GetResourceKind returns a string representation of the resource type.
+func (e EnvironmentListItem) GetResourceKind() ResourceKind {
+	return "EnvironmentListItem"
+}
+
+// GetPrintColumns returns a list of fields to print for this resource output.
+func (e EnvironmentListItem) GetPrintColumns() []string {
+	return []string{"ID", "Name"}
+}
+
+// EnvironmentResponse is the top-level environment response from the
+// Postman API.
+type EnvironmentResponse struct {
+	Environment Environment `json:"environment"`
+}
+
+// Environment represents the single environment response from the
+// Postman API
+type Environment struct {
+	ID     string         `json:"id"`
+	Name   string         `json:"name"`
+	Values []KeyValuePair `json:"values"`
+}
+
+// GetResourceKind returns a string representation of the resource type.
+func (e Environment) GetResourceKind() ResourceKind {
+	return "Environment"
+}
+
+// GetPrintColumns returns a list of fields to print for this resource output.
+func (e Environment) GetPrintColumns() []string {
+	return []string{"ID", "Name"}
+}
+
+// KeyValuePair represents a key and value in the Postman API.
+type KeyValuePair struct {
+	Key     string `json:"key"`
+	Value   string `json:"value"`
+	Enabled bool   `json:"enabled"`
 }

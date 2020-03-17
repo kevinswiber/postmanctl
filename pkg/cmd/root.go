@@ -18,8 +18,11 @@ package cmd
 
 import (
 	"fmt"
+	"net/http"
+	"net/url"
 	"os"
 
+	"github.com/kevinswiber/postmanctl/pkg/client"
 	"github.com/kevinswiber/postmanctl/pkg/config"
 	"github.com/spf13/cobra"
 
@@ -27,9 +30,12 @@ import (
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
-var cfg *config.Config
-var configContext config.Context
+var (
+	cfgFile       string
+	cfg           *config.Config
+	configContext config.Context
+	apiClient     *client.APIClient
+)
 
 var rootCmd = &cobra.Command{
 	Use:   "postmanctl",
@@ -47,6 +53,7 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
+	cobra.OnInitialize(initAPIClientConfig)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.postmanctl.yaml)")
 }
 
@@ -94,6 +101,20 @@ func initConfig() {
 		}
 	} else {
 		fmt.Fprintf(os.Stderr, "context is not configured, %s\n", cfg.CurrentContext)
+		os.Exit(1)
+	}
+}
+
+func initAPIClientConfig() {
+	u, err := url.Parse(configContext.APIRoot)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		os.Exit(1)
+	}
+
+	apiClient, err = client.NewAPIClient(u, configContext.APIKey, &http.Client{})
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
 		os.Exit(1)
 	}
 }
