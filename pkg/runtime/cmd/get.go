@@ -25,9 +25,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/kevinswiber/postmanctl/pkg/client"
-	"github.com/kevinswiber/postmanctl/pkg/printers"
-	"github.com/kevinswiber/postmanctl/pkg/resources"
+	"github.com/kevinswiber/postmanctl/pkg/sdk/client"
+	"github.com/kevinswiber/postmanctl/pkg/sdk/printers"
+	"github.com/kevinswiber/postmanctl/pkg/sdk/resources"
 	"github.com/liggitt/tabwriter"
 )
 

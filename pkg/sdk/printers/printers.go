@@ -19,7 +19,7 @@ package printers
 import (
 	"io"
 
-	"github.com/kevinswiber/postmanctl/pkg/resources"
+	"github.com/kevinswiber/postmanctl/pkg/sdk/resources"
 )
 
 // ResourcePrinter writes an output of API resources.

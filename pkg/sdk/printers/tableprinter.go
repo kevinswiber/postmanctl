@@ -22,7 +22,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/kevinswiber/postmanctl/pkg/resources"
+	"github.com/kevinswiber/postmanctl/pkg/sdk/resources"
 	"github.com/liggitt/tabwriter"
 )
 

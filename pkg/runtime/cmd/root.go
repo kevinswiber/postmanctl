@@ -22,8 +22,8 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/kevinswiber/postmanctl/pkg/client"
-	"github.com/kevinswiber/postmanctl/pkg/config"
+	"github.com/kevinswiber/postmanctl/pkg/runtime/config"
+	"github.com/kevinswiber/postmanctl/pkg/sdk/client"
 	"github.com/spf13/cobra"
 
 	homedir "github.com/mitchellh/go-homedir"

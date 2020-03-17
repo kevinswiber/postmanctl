@@ -25,7 +25,7 @@ import (
 	"os"
 	"text/tabwriter"
 
-	"github.com/kevinswiber/postmanctl/pkg/resources"
+	"github.com/kevinswiber/postmanctl/pkg/sdk/resources"
 	"github.com/spf13/cobra"
 )
 
