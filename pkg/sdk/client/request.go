@@ -18,10 +18,36 @@ package client
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
+
+	"github.com/kevinswiber/postmanctl/pkg/sdk/resources"
 )
+
+// RequestError represents an error from the Postman API.
+type RequestError struct {
+	StatusCode int
+	Name       string
+	Message    string
+}
+
+// NewRequestError creates a new RequestError for Postman API responses.
+func NewRequestError(code int, name string, message string) *RequestError {
+	return &RequestError{
+		StatusCode: code,
+		Name:       name,
+		Message:    message,
+	}
+}
+
+func (e *RequestError) Error() string {
+	return fmt.Sprintf("status code: %d, name: %s, message: %s", e.StatusCode,
+		e.Name, e.Message)
+}
 
 // Request holds state for a Postman API request.
 type Request struct {
@@ -29,6 +55,7 @@ type Request struct {
 	c        *APIClient
 	method   string
 	resource string
+	output   interface{}
 	headers  http.Header
 }
 
@@ -71,6 +98,12 @@ func (r *Request) Resource(resource ...string) *Request {
 	return r
 }
 
+// As sets a destination resource for the output response
+func (r *Request) As(o interface{}) *Request {
+	r.output = o
+	return r
+}
+
 // URL returns a complete URL for the current request.
 func (r *Request) URL() *url.URL {
 	finalURL := &url.URL{}
@@ -98,6 +131,31 @@ func (r *Request) Do() (*http.Response, error) {
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+
+		if err != nil {
+			return resp, err
+		}
+
+		var e resources.ErrorResponse
+		json.Unmarshal(body, &e)
+		errorMessage := NewRequestError(resp.StatusCode, e.Error.Name, e.Error.Message)
+		return nil, errorMessage
+	}
+
+	if r.output != nil {
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+
+		if err != nil {
+			return resp, err
+		}
+
+		json.Unmarshal(body, &r.output)
 	}
 
 	return resp, nil

@@ -17,11 +17,8 @@ limitations under the License.
 package cmd
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -126,39 +123,26 @@ func init() {
 		&cobra.Command{
 			Use: "user",
 			RunE: func(cmd *cobra.Command, args []string) error {
+				var representation resources.UserResponse
 				req := client.NewRequest(apiClient)
-				res, err := req.Get().
+				_, err := req.Get().
 					Resource("me").
+					As(&representation).
 					Do()
 
 				if err != nil {
-					return err
+					return handleResponseError(err)
 				}
-
-				defer res.Body.Close()
-				body, err := ioutil.ReadAll(res.Body)
-
-				if err != nil {
-					return err
-				}
-
-				if res.StatusCode != http.StatusOK {
-					var e resources.ErrorResponse
-					json.Unmarshal(body, &e)
-					errorMessage := fmt.Sprintf("error: status code: %d, %s", res.StatusCode, e.Error.String())
-					fmt.Fprintln(os.Stderr, errorMessage)
-					return nil
-				}
-
-				var u resources.UserResponse
-				json.Unmarshal(body, &u)
 
 				w := printers.GetNewTabWriter(os.Stdout)
+
 				var r resources.Resource
-				r = u.User
+				r = representation.User
 				options := printers.PrintOptions{}
 				printer := printers.NewTablePrinter(options)
+
 				printer.Print(r, w)
+
 				return nil
 			},
 		},
@@ -196,26 +180,18 @@ func init() {
 }
 
 func getAllCollections(w *tabwriter.Writer) error {
+	var representation resources.CollectionListResponse
 	req := client.NewRequest(apiClient)
-	res, err := req.Get().
+	_, err := req.Get().
 		Resource("collections").
+		As(&representation).
 		Do()
 
 	if err != nil {
-		return err
+		return handleResponseError(err)
 	}
 
-	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
-
-	if err != nil {
-		return err
-	}
-
-	var c resources.CollectionListResponse
-	json.Unmarshal(body, &c)
-
-	for i, col := range c.Collections {
+	for i, col := range representation.Collections {
 		var options printers.PrintOptions
 		if i == 0 {
 			options = printers.PrintOptions{
@@ -237,57 +213,42 @@ func getAllCollections(w *tabwriter.Writer) error {
 }
 
 func getSingleCollection(w *tabwriter.Writer, id string) error {
+	var representation resources.CollectionResponse
 	req := client.NewRequest(apiClient)
-	res, err := req.Get().
+	_, err := req.Get().
 		Resource("collections", id).
+		As(&representation).
 		Do()
 
 	if err != nil {
-		return err
+		return handleResponseError(err)
 	}
-
-	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
-
-	if err != nil {
-		return err
-	}
-
-	var cRes resources.CollectionResponse
-	json.Unmarshal(body, &cRes)
 
 	options := printers.PrintOptions{
 		NoHeaders: false,
 	}
 
-	var r resources.Resource
-	r = cRes.Collection.Info
 	printer := printers.NewTablePrinter(options)
+
+	var r resources.Resource
+	r = representation.Collection.Info
 	printer.Print(r, w)
 	return nil
 }
 
 func getAllEnvironments(w *tabwriter.Writer) error {
+	var representation resources.EnvironmentListResponse
 	req := client.NewRequest(apiClient)
-	res, err := req.Get().
+	_, err := req.Get().
 		Resource("environments").
+		As(&representation).
 		Do()
 
 	if err != nil {
-		return err
+		return handleResponseError(err)
 	}
 
-	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
-
-	if err != nil {
-		return err
-	}
-
-	var e resources.EnvironmentListResponse
-	json.Unmarshal(body, &e)
-
-	for i, env := range e.Environments {
+	for i, env := range representation.Environments {
 		var options printers.PrintOptions
 		if i == 0 {
 			options = printers.PrintOptions{
@@ -309,39 +270,23 @@ func getAllEnvironments(w *tabwriter.Writer) error {
 }
 
 func getSingleEnvironment(w *tabwriter.Writer, id string) error {
+	var representation resources.EnvironmentResponse
 	req := client.NewRequest(apiClient)
-	res, err := req.Get().
+	_, err := req.Get().
 		Resource("environments", id).
+		As(&representation).
 		Do()
 
 	if err != nil {
-		return err
+		return handleResponseError(err)
 	}
-
-	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
-
-	if err != nil {
-		return err
-	}
-
-	if res.StatusCode != http.StatusOK {
-		var e resources.ErrorResponse
-		json.Unmarshal(body, &e)
-		errorMessage := fmt.Sprintf("error: status code: %d, %s", res.StatusCode, e.Error.String())
-		fmt.Fprintln(os.Stderr, errorMessage)
-		return nil
-	}
-
-	var e resources.EnvironmentResponse
-	json.Unmarshal(body, &e)
 
 	options := printers.PrintOptions{
 		NoHeaders: false,
 	}
 
 	var r resources.Resource
-	r = e.Environment
+	r = representation.Environment
 	printer := printers.NewTablePrinter(options)
 	printer.Print(r, w)
 
@@ -349,26 +294,18 @@ func getSingleEnvironment(w *tabwriter.Writer, id string) error {
 }
 
 func getAllAPIs(w *tabwriter.Writer) error {
+	var representation resources.APIListResponse
 	req := client.NewRequest(apiClient)
-	res, err := req.Get().
+	_, err := req.Get().
 		Resource("apis").
+		As(&representation).
 		Do()
 
 	if err != nil {
-		return err
+		return handleResponseError(err)
 	}
 
-	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
-
-	if err != nil {
-		return err
-	}
-
-	var e resources.APIListResponse
-	json.Unmarshal(body, &e)
-
-	for i, api := range e.APIs {
+	for i, api := range representation.APIs {
 		var options printers.PrintOptions
 		if i == 0 {
 			options = printers.PrintOptions{
@@ -390,41 +327,34 @@ func getAllAPIs(w *tabwriter.Writer) error {
 }
 
 func getSingleAPI(w *tabwriter.Writer, id string) error {
+	var representation resources.APIResponse
 	req := client.NewRequest(apiClient)
-	res, err := req.Get().
+	_, err := req.Get().
 		Resource("apis", id).
+		As(&representation).
 		Do()
 
 	if err != nil {
-		return err
+		return handleResponseError(err)
 	}
-
-	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
-
-	if err != nil {
-		return err
-	}
-
-	if res.StatusCode != http.StatusOK {
-		var e resources.ErrorResponse
-		json.Unmarshal(body, &e)
-		errorMessage := fmt.Sprintf("error: status code: %d, %s", res.StatusCode, e.Error.String())
-		fmt.Fprintln(os.Stderr, errorMessage)
-		return nil
-	}
-
-	var e resources.APIResponse
-	json.Unmarshal(body, &e)
 
 	options := printers.PrintOptions{
 		NoHeaders: false,
 	}
 
 	var r resources.Resource
-	r = e.API
+	r = representation.API
 	printer := printers.NewTablePrinter(options)
 	printer.Print(r, w)
 
 	return nil
+}
+
+func handleResponseError(err error) error {
+	if err, ok := err.(*client.RequestError); ok {
+		fmt.Fprintln(os.Stderr, err.Error())
+		return nil
+	}
+
+	return err
 }
