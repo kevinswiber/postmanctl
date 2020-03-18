@@ -16,13 +16,19 @@ limitations under the License.
 
 package resources
 
-// ResourceKind represents the type of the Postman API entity.
-type ResourceKind string
+import "fmt"
 
-// Resource represents a Postman API entity.
-type Resource interface {
-	// GetResourceKind returns a string representation of the resource type.
-	GetResourceKind() ResourceKind
-	// GetPrintColumns returns a list of fields to print for this resource output.
-	GetPrintColumns() []string
+// ErrorResponse is the struct representation of a Postman API error.
+type ErrorResponse struct {
+	Error Error `json:"error"`
+}
+
+// Error is a struct representation of error details from a Postman API error.
+type Error struct {
+	Name    string `json:"name"`
+	Message string `json:"message"`
+}
+
+func (e *Error) String() string {
+	return fmt.Sprintf("name: %s, message: %s", e.Name, e.Message)
 }

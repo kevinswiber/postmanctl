@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -141,6 +142,14 @@ func init() {
 					return err
 				}
 
+				if res.StatusCode != http.StatusOK {
+					var e resources.ErrorResponse
+					json.Unmarshal(body, &e)
+					errorMessage := fmt.Sprintf("error: status code: %d, %s", res.StatusCode, e.Error.String())
+					fmt.Fprintln(os.Stderr, errorMessage)
+					return nil
+				}
+
 				var u resources.UserResponse
 				json.Unmarshal(body, &u)
 
@@ -156,8 +165,14 @@ func init() {
 		&cobra.Command{
 			Use:     "apis",
 			Aliases: []string{"api"},
-			Run: func(cmd *cobra.Command, args []string) {
-				fmt.Println("get apis")
+			RunE: func(cmd *cobra.Command, args []string) error {
+				w := printers.GetNewTabWriter(os.Stdout)
+
+				if len(args) > 0 {
+					return getSingleAPI(w, args[0])
+				}
+
+				return getAllAPIs(w)
 			},
 		},
 		&cobra.Command{
@@ -310,6 +325,14 @@ func getSingleEnvironment(w *tabwriter.Writer, id string) error {
 		return err
 	}
 
+	if res.StatusCode != http.StatusOK {
+		var e resources.ErrorResponse
+		json.Unmarshal(body, &e)
+		errorMessage := fmt.Sprintf("error: status code: %d, %s", res.StatusCode, e.Error.String())
+		fmt.Fprintln(os.Stderr, errorMessage)
+		return nil
+	}
+
 	var e resources.EnvironmentResponse
 	json.Unmarshal(body, &e)
 
@@ -319,6 +342,87 @@ func getSingleEnvironment(w *tabwriter.Writer, id string) error {
 
 	var r resources.Resource
 	r = e.Environment
+	printer := printers.NewTablePrinter(options)
+	printer.Print(r, w)
+
+	return nil
+}
+
+func getAllAPIs(w *tabwriter.Writer) error {
+	req := client.NewRequest(apiClient)
+	res, err := req.Get().
+		Resource("apis").
+		Do()
+
+	if err != nil {
+		return err
+	}
+
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
+
+	if err != nil {
+		return err
+	}
+
+	var e resources.APIListResponse
+	json.Unmarshal(body, &e)
+
+	for i, api := range e.APIs {
+		var options printers.PrintOptions
+		if i == 0 {
+			options = printers.PrintOptions{
+				NoHeaders: false,
+			}
+		} else {
+			options = printers.PrintOptions{
+				NoHeaders: true,
+			}
+		}
+
+		var res resources.Resource
+		res = api
+		printer := printers.NewTablePrinter(options)
+		printer.Print(res, w)
+	}
+
+	return nil
+}
+
+func getSingleAPI(w *tabwriter.Writer, id string) error {
+	req := client.NewRequest(apiClient)
+	res, err := req.Get().
+		Resource("apis", id).
+		Do()
+
+	if err != nil {
+		return err
+	}
+
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
+
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		var e resources.ErrorResponse
+		json.Unmarshal(body, &e)
+		errorMessage := fmt.Sprintf("error: status code: %d, %s", res.StatusCode, e.Error.String())
+		fmt.Fprintln(os.Stderr, errorMessage)
+		return nil
+	}
+
+	var e resources.APIResponse
+	json.Unmarshal(body, &e)
+
+	options := printers.PrintOptions{
+		NoHeaders: false,
+	}
+
+	var r resources.Resource
+	r = e.API
 	printer := printers.NewTablePrinter(options)
 	printer.Print(r, w)
 

@@ -17,6 +17,7 @@ limitations under the License.
 package client
 
 import (
+	"context"
 	"net/http"
 	"net/url"
 	"path"
@@ -24,6 +25,7 @@ import (
 
 // Request holds state for a Postman API request.
 type Request struct {
+	ctx      context.Context
 	c        *APIClient
 	method   string
 	resource string
@@ -32,8 +34,15 @@ type Request struct {
 
 // NewRequest initializes a Postman API Request.
 func NewRequest(c *APIClient) *Request {
+	return NewRequestWithContext(context.Background(), c)
+}
+
+// NewRequestWithContext intiializes a Postman API Request with a
+// given context.
+func NewRequestWithContext(ctx context.Context, c *APIClient) *Request {
 	r := &Request{
-		c: c,
+		ctx: ctx,
+		c:   c,
 	}
 
 	if r.headers == nil {
@@ -76,7 +85,7 @@ func (r *Request) URL() *url.URL {
 // Do executes the HTTP request.
 func (r *Request) Do() (*http.Response, error) {
 	url := r.URL().String()
-	req, err := http.NewRequest(r.method, url, nil)
+	req, err := http.NewRequestWithContext(r.ctx, r.method, url, nil)
 	if err != nil {
 		return nil, err
 	}
