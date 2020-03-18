@@ -22,6 +22,16 @@ type CollectionListResponse struct {
 	Collections []CollectionListItem `json:"collections"`
 }
 
+// Format returns column headers and values for the resource.
+func (r CollectionListResponse) Format() ([]string, []interface{}) {
+	s := make([]interface{}, len(r.Collections))
+	for i, v := range r.Collections {
+		s[i] = v
+	}
+
+	return []string{"ID", "Name"}, s
+}
+
 // CollectionListItem represents a single item in a CollectionListResponse.
 type CollectionListItem struct {
 	ID    string `json:"id"`
@@ -30,20 +40,18 @@ type CollectionListItem struct {
 	UID   string `json:"uid"`
 }
 
-// GetResourceKind returns a string representation of the resource type.
-func (c CollectionListItem) GetResourceKind() ResourceKind {
-	return "CollectionListItem"
-}
-
-// GetPrintColumns returns a list of fields to print for this resource output.
-func (c CollectionListItem) GetPrintColumns() []string {
-	return []string{"ID", "Name"}
-}
-
 // CollectionResponse is the top-level struct representation of a collection
 // response from the Postman API.
 type CollectionResponse struct {
 	Collection Collection `json:"collection"`
+}
+
+// Format returns column headers and values for the resource.
+func (r CollectionResponse) Format() ([]string, []interface{}) {
+	s := make([]interface{}, 1)
+	s[0] = r.Collection.Info
+
+	return []string{"ID", "Name"}, s
 }
 
 // Collection is a single item representation of the CollectionResponse.
@@ -59,16 +67,6 @@ type CollectionInfo struct {
 	ID     string `json:"_postman_id"`
 	Name   string `json:"name"`
 	Schema string `json:"schema"`
-}
-
-// GetResourceKind returns a string representation of the resource type.
-func (c CollectionInfo) GetResourceKind() ResourceKind {
-	return "CollectionInfo"
-}
-
-// GetPrintColumns returns a list of fields to print for this resource output.
-func (c CollectionInfo) GetPrintColumns() []string {
-	return []string{"ID", "Name"}
 }
 
 // CollectionItem is a single unit of a collection entity.

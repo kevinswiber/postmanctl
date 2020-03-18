@@ -21,6 +21,16 @@ type APIListResponse struct {
 	APIs []APIListItem `json:"apis"`
 }
 
+// Format returns column headers and values for the resource.
+func (r APIListResponse) Format() ([]string, []interface{}) {
+	s := make([]interface{}, len(r.APIs))
+	for i, v := range r.APIs {
+		s[i] = v
+	}
+
+	return []string{"ID", "Name"}, s
+}
+
 // APIListItem represents a single item in an APIListResponse.
 type APIListItem struct {
 	CreatedBy   string `json:"createdBy"`
@@ -34,19 +44,17 @@ type APIListItem struct {
 	UpdatedAt   string `json:"updatedAt"`
 }
 
-// GetResourceKind returns a string representation of the resource type.
-func (ali APIListItem) GetResourceKind() ResourceKind {
-	return "APIListItem"
-}
-
-// GetPrintColumns returns a list of fields to print for this resource output.
-func (ali APIListItem) GetPrintColumns() []string {
-	return []string{"ID", "Name", "Summary"}
-}
-
 // APIResponse is a single API representation in the Postman API.
 type APIResponse struct {
 	API API `json:"api"`
+}
+
+// Format returns column headers and values for the resource.
+func (r APIResponse) Format() ([]string, []interface{}) {
+	s := make([]interface{}, 1)
+	s[0] = r.API
+
+	return []string{"ID", "Name"}, s
 }
 
 // API represents a single item in an APIListResponse.
@@ -60,14 +68,4 @@ type API struct {
 	Description string `json:"description"`
 	CreatedAt   string `json:"createdAt"`
 	UpdatedAt   string `json:"updatedAt"`
-}
-
-// GetResourceKind returns a string representation of the resource type.
-func (ali API) GetResourceKind() ResourceKind {
-	return "API"
-}
-
-// GetPrintColumns returns a list of fields to print for this resource output.
-func (ali API) GetPrintColumns() []string {
-	return []string{"ID", "Name", "Summary"}
 }

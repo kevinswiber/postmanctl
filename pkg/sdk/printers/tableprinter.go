@@ -46,8 +46,8 @@ func NewTablePrinter(o PrintOptions) *TablePrinter {
 	}
 }
 
-// Print executes the printer and creates an output.
-func (p *TablePrinter) Print(r resources.Resource, output io.Writer) {
+// PrintResource executes the printer and creates an output.
+func (p *TablePrinter) PrintResource(r resources.Formatter, output io.Writer) {
 	w, found := output.(*tabwriter.Writer)
 	if !found {
 		w = GetNewTabWriter(output)
@@ -55,20 +55,26 @@ func (p *TablePrinter) Print(r resources.Resource, output io.Writer) {
 
 	defer w.Flush()
 
-	cols := r.GetPrintColumns()
+	cols, objs := r.Format()
 
 	if !p.options.NoHeaders {
-		fmt.Fprintln(w, strings.Join(cols, "\t"))
+		printCols := make([]string, len(cols))
+		for i, c := range cols {
+			printCols[i] = strings.ToUpper(c)
+		}
+		fmt.Fprintln(w, strings.Join(printCols, "\t"))
 	}
 
-	vals := make([]string, len(cols))
-	for i, c := range cols {
-		rVal := reflect.ValueOf(r)
-		f := reflect.Indirect(rVal).FieldByName(c).String()
-		vals[i] = f
-	}
+	for _, obj := range objs {
+		vals := make([]string, len(cols))
+		for i, c := range cols {
+			rVal := reflect.ValueOf(obj)
+			f := reflect.Indirect(rVal).FieldByName(c).String()
+			vals[i] = f
+		}
 
-	fmt.Fprintln(w, strings.Join(vals, "\t"))
+		fmt.Fprintln(w, strings.Join(vals, "\t"))
+	}
 }
 
 // GetNewTabWriter returns a new formatted tabwriter.Writer.

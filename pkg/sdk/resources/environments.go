@@ -22,6 +22,16 @@ type EnvironmentListResponse struct {
 	Environments []EnvironmentListItem `json:"environments"`
 }
 
+// Format returns column headers and values for the resource.
+func (r EnvironmentListResponse) Format() ([]string, []interface{}) {
+	s := make([]interface{}, len(r.Environments))
+	for i, v := range r.Environments {
+		s[i] = v
+	}
+
+	return []string{"ID", "Name"}, s
+}
+
 // EnvironmentListItem represents a single item in an EnvironmentListResponse.
 type EnvironmentListItem struct {
 	ID    string `json:"id"`
@@ -30,20 +40,18 @@ type EnvironmentListItem struct {
 	UID   string `json:"uid"`
 }
 
-// GetResourceKind returns a string representation of the resource type.
-func (e EnvironmentListItem) GetResourceKind() ResourceKind {
-	return "EnvironmentListItem"
-}
-
-// GetPrintColumns returns a list of fields to print for this resource output.
-func (e EnvironmentListItem) GetPrintColumns() []string {
-	return []string{"ID", "Name"}
-}
-
 // EnvironmentResponse is the top-level environment response from the
 // Postman API.
 type EnvironmentResponse struct {
 	Environment Environment `json:"environment"`
+}
+
+// Format returns column headers and values for the resource.
+func (r EnvironmentResponse) Format() ([]string, []interface{}) {
+	s := make([]interface{}, 1)
+	s[0] = r.Environment
+
+	return []string{"ID", "Name"}, s
 }
 
 // Environment represents the single environment response from the
@@ -52,16 +60,6 @@ type Environment struct {
 	ID     string         `json:"id"`
 	Name   string         `json:"name"`
 	Values []KeyValuePair `json:"values"`
-}
-
-// GetResourceKind returns a string representation of the resource type.
-func (e Environment) GetResourceKind() ResourceKind {
-	return "Environment"
-}
-
-// GetPrintColumns returns a list of fields to print for this resource output.
-func (e Environment) GetPrintColumns() []string {
-	return []string{"ID", "Name"}
 }
 
 // KeyValuePair represents a key and value in the Postman API.

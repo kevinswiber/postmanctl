@@ -16,13 +16,8 @@ limitations under the License.
 
 package resources
 
-// ResourceKind represents the type of the Postman API entity.
-type ResourceKind string
-
-// Resource represents a Postman API entity.
-type Resource interface {
-	// GetResourceKind returns a string representation of the resource type.
-	GetResourceKind() ResourceKind
-	// GetPrintColumns returns a list of fields to print for this resource output.
-	GetPrintColumns() []string
+// Formatter represents a resource that provides print formatting information.
+type Formatter interface {
+	// Format returns column headers and values for the resource.
+	Format() ([]string, []interface{})
 }

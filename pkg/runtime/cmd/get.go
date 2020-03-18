@@ -126,8 +126,8 @@ func init() {
 				var representation resources.UserResponse
 				req := client.NewRequest(apiClient)
 				_, err := req.Get().
-					Resource("me").
-					As(&representation).
+					Path("me").
+					Body(&representation).
 					Do()
 
 				if err != nil {
@@ -136,12 +136,10 @@ func init() {
 
 				w := printers.GetNewTabWriter(os.Stdout)
 
-				var r resources.Resource
-				r = representation.User
-				options := printers.PrintOptions{}
-				printer := printers.NewTablePrinter(options)
-
-				printer.Print(r, w)
+				var res resources.Formatter
+				res = representation
+				printer := printers.NewTablePrinter(printers.PrintOptions{})
+				printer.PrintResource(res, w)
 
 				return nil
 			},
@@ -183,31 +181,18 @@ func getAllCollections(w *tabwriter.Writer) error {
 	var representation resources.CollectionListResponse
 	req := client.NewRequest(apiClient)
 	_, err := req.Get().
-		Resource("collections").
-		As(&representation).
+		Path("collections").
+		Body(&representation).
 		Do()
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	for i, col := range representation.Collections {
-		var options printers.PrintOptions
-		if i == 0 {
-			options = printers.PrintOptions{
-				NoHeaders: false,
-			}
-		} else {
-			options = printers.PrintOptions{
-				NoHeaders: true,
-			}
-		}
-
-		var res resources.Resource
-		res = col
-		printer := printers.NewTablePrinter(options)
-		printer.Print(res, w)
-	}
+	var res resources.Formatter
+	res = representation
+	printer := printers.NewTablePrinter(printers.PrintOptions{})
+	printer.PrintResource(res, w)
 
 	return nil
 }
@@ -216,23 +201,19 @@ func getSingleCollection(w *tabwriter.Writer, id string) error {
 	var representation resources.CollectionResponse
 	req := client.NewRequest(apiClient)
 	_, err := req.Get().
-		Resource("collections", id).
-		As(&representation).
+		Path("collections", id).
+		Body(&representation).
 		Do()
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	options := printers.PrintOptions{
-		NoHeaders: false,
-	}
+	var res resources.Formatter
+	res = representation
+	printer := printers.NewTablePrinter(printers.PrintOptions{})
+	printer.PrintResource(res, w)
 
-	printer := printers.NewTablePrinter(options)
-
-	var r resources.Resource
-	r = representation.Collection.Info
-	printer.Print(r, w)
 	return nil
 }
 
@@ -240,31 +221,18 @@ func getAllEnvironments(w *tabwriter.Writer) error {
 	var representation resources.EnvironmentListResponse
 	req := client.NewRequest(apiClient)
 	_, err := req.Get().
-		Resource("environments").
-		As(&representation).
+		Path("environments").
+		Body(&representation).
 		Do()
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	for i, env := range representation.Environments {
-		var options printers.PrintOptions
-		if i == 0 {
-			options = printers.PrintOptions{
-				NoHeaders: false,
-			}
-		} else {
-			options = printers.PrintOptions{
-				NoHeaders: true,
-			}
-		}
-
-		var res resources.Resource
-		res = env
-		printer := printers.NewTablePrinter(options)
-		printer.Print(res, w)
-	}
+	var res resources.Formatter
+	res = representation
+	printer := printers.NewTablePrinter(printers.PrintOptions{})
+	printer.PrintResource(res, w)
 
 	return nil
 }
@@ -273,22 +241,18 @@ func getSingleEnvironment(w *tabwriter.Writer, id string) error {
 	var representation resources.EnvironmentResponse
 	req := client.NewRequest(apiClient)
 	_, err := req.Get().
-		Resource("environments", id).
-		As(&representation).
+		Path("environments", id).
+		Body(&representation).
 		Do()
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	options := printers.PrintOptions{
-		NoHeaders: false,
-	}
-
-	var r resources.Resource
-	r = representation.Environment
-	printer := printers.NewTablePrinter(options)
-	printer.Print(r, w)
+	var res resources.Formatter
+	res = representation
+	printer := printers.NewTablePrinter(printers.PrintOptions{})
+	printer.PrintResource(res, w)
 
 	return nil
 }
@@ -297,31 +261,18 @@ func getAllAPIs(w *tabwriter.Writer) error {
 	var representation resources.APIListResponse
 	req := client.NewRequest(apiClient)
 	_, err := req.Get().
-		Resource("apis").
-		As(&representation).
+		Path("apis").
+		Body(&representation).
 		Do()
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	for i, api := range representation.APIs {
-		var options printers.PrintOptions
-		if i == 0 {
-			options = printers.PrintOptions{
-				NoHeaders: false,
-			}
-		} else {
-			options = printers.PrintOptions{
-				NoHeaders: true,
-			}
-		}
-
-		var res resources.Resource
-		res = api
-		printer := printers.NewTablePrinter(options)
-		printer.Print(res, w)
-	}
+	var res resources.Formatter
+	res = representation
+	printer := printers.NewTablePrinter(printers.PrintOptions{})
+	printer.PrintResource(res, w)
 
 	return nil
 }
@@ -330,22 +281,18 @@ func getSingleAPI(w *tabwriter.Writer, id string) error {
 	var representation resources.APIResponse
 	req := client.NewRequest(apiClient)
 	_, err := req.Get().
-		Resource("apis", id).
-		As(&representation).
+		Path("apis", id).
+		Body(&representation).
 		Do()
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	options := printers.PrintOptions{
-		NoHeaders: false,
-	}
-
-	var r resources.Resource
-	r = representation.API
-	printer := printers.NewTablePrinter(options)
-	printer.Print(r, w)
+	var res resources.Formatter
+	res = representation
+	printer := printers.NewTablePrinter(printers.PrintOptions{})
+	printer.PrintResource(res, w)
 
 	return nil
 }

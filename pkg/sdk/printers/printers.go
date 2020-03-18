@@ -24,7 +24,7 @@ import (
 
 // ResourcePrinter writes an output of API resources.
 type ResourcePrinter interface {
-	Print(resources.Resource, io.Writer)
+	PrintResource(resources.Formatter, io.Writer)
 }
 
 // PrintOptions holds various options used in ResourcePrinters.

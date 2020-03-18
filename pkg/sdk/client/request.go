@@ -51,12 +51,13 @@ func (e *RequestError) Error() string {
 
 // Request holds state for a Postman API request.
 type Request struct {
-	ctx      context.Context
-	c        *APIClient
-	method   string
-	resource string
-	output   interface{}
-	headers  http.Header
+	ctx     context.Context
+	c       *APIClient
+	method  string
+	path    string
+	body    interface{}
+	headers http.Header
+	err     error
 }
 
 // NewRequest initializes a Postman API Request.
@@ -92,15 +93,23 @@ func (r *Request) Get() *Request {
 	return r
 }
 
-// Resource sets the path of the HTTP request.
-func (r *Request) Resource(resource ...string) *Request {
-	r.resource = path.Join(resource...)
+// Path sets the path of the HTTP request.
+func (r *Request) Path(p ...string) *Request {
+	r.path = path.Join(p...)
 	return r
 }
 
-// As sets a destination resource for the output response
-func (r *Request) As(o interface{}) *Request {
-	r.output = o
+// Body sets a destination resource for the output response
+func (r *Request) Body(o interface{}) *Request {
+	// TODO: Find a cleaner abstraction over print columns, resource identifiers, and data.
+	/*
+		if _, ok := o.(resources.Resource); !ok {
+			r.err = fmt.Errorf("unknown type used for request body: %+v", o)
+			return r
+		}
+	*/
+
+	r.body = o
 	return r
 }
 
@@ -110,7 +119,7 @@ func (r *Request) URL() *url.URL {
 	if r.c.base != nil {
 		*finalURL = *r.c.base
 	}
-	finalURL.Path = r.resource
+	finalURL.Path = r.path
 
 	return finalURL
 }
@@ -118,6 +127,11 @@ func (r *Request) URL() *url.URL {
 // Do executes the HTTP request.
 func (r *Request) Do() (*http.Response, error) {
 	url := r.URL().String()
+
+	if r.err != nil {
+		return nil, r.err
+	}
+
 	req, err := http.NewRequestWithContext(r.ctx, r.method, url, nil)
 	if err != nil {
 		return nil, err
@@ -147,7 +161,7 @@ func (r *Request) Do() (*http.Response, error) {
 		return nil, errorMessage
 	}
 
-	if r.output != nil {
+	if r.body != nil {
 		defer resp.Body.Close()
 		body, err := ioutil.ReadAll(resp.Body)
 
@@ -155,7 +169,7 @@ func (r *Request) Do() (*http.Response, error) {
 			return resp, err
 		}
 
-		json.Unmarshal(body, &r.output)
+		json.Unmarshal(body, &r.body)
 	}
 
 	return resp, nil
