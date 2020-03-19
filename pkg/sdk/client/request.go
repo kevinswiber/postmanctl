@@ -52,7 +52,7 @@ func (e *RequestError) Error() string {
 // Request holds state for a Postman API request.
 type Request struct {
 	ctx     context.Context
-	c       *APIClient
+	options *Options
 	method  string
 	path    string
 	body    interface{}
@@ -61,16 +61,16 @@ type Request struct {
 }
 
 // NewRequest initializes a Postman API Request.
-func NewRequest(c *APIClient) *Request {
+func NewRequest(c *Options) *Request {
 	return NewRequestWithContext(context.Background(), c)
 }
 
 // NewRequestWithContext intiializes a Postman API Request with a
 // given context.
-func NewRequestWithContext(ctx context.Context, c *APIClient) *Request {
+func NewRequestWithContext(ctx context.Context, c *Options) *Request {
 	r := &Request{
-		ctx: ctx,
-		c:   c,
+		ctx:     ctx,
+		options: c,
 	}
 
 	if r.headers == nil {
@@ -116,8 +116,8 @@ func (r *Request) Body(o interface{}) *Request {
 // URL returns a complete URL for the current request.
 func (r *Request) URL() *url.URL {
 	finalURL := &url.URL{}
-	if r.c.base != nil {
-		*finalURL = *r.c.base
+	if r.options.base != nil {
+		*finalURL = *r.options.base
 	}
 	finalURL.Path = r.path
 
@@ -137,7 +137,7 @@ func (r *Request) Do() (*http.Response, error) {
 		return nil, err
 	}
 	req.Header = r.headers
-	client := r.c.Client
+	client := r.options.Client
 	if client == nil {
 		client = http.DefaultClient
 	}
@@ -158,6 +158,7 @@ func (r *Request) Do() (*http.Response, error) {
 		var e resources.ErrorResponse
 		json.Unmarshal(body, &e)
 		errorMessage := NewRequestError(resp.StatusCode, e.Error.Name, e.Error.Message)
+		r.err = errorMessage
 		return nil, errorMessage
 	}
 

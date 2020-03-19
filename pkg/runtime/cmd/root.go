@@ -23,6 +23,7 @@ import (
 	"os"
 
 	"github.com/kevinswiber/postmanctl/pkg/runtime/config"
+	"github.com/kevinswiber/postmanctl/pkg/sdk"
 	"github.com/kevinswiber/postmanctl/pkg/sdk/client"
 	"github.com/spf13/cobra"
 
@@ -34,7 +35,8 @@ var (
 	cfgFile       string
 	cfg           *config.Config
 	configContext config.Context
-	apiClient     *client.APIClient
+	options       *client.Options
+	service       *sdk.Service
 )
 
 var rootCmd = &cobra.Command{
@@ -112,9 +114,6 @@ func initAPIClientConfig() {
 		os.Exit(1)
 	}
 
-	apiClient, err = client.NewAPIClient(u, configContext.APIKey, &http.Client{})
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
-		os.Exit(1)
-	}
+	options = client.NewOptions(u, configContext.APIKey, http.DefaultClient)
+	service = sdk.NewService(options)
 }

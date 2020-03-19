@@ -19,13 +19,16 @@ package resources
 // EnvironmentListResponse represents the top-level environments response from the
 // Postman API.
 type EnvironmentListResponse struct {
-	Environments []EnvironmentListItem `json:"environments"`
+	Environments EnvironmentListItems `json:"environments"`
 }
 
+// EnvironmentListItems is a slice of EnvironmentListItem.
+type EnvironmentListItems []EnvironmentListItem
+
 // Format returns column headers and values for the resource.
-func (r EnvironmentListResponse) Format() ([]string, []interface{}) {
-	s := make([]interface{}, len(r.Environments))
-	for i, v := range r.Environments {
+func (r EnvironmentListItems) Format() ([]string, []interface{}) {
+	s := make([]interface{}, len(r))
+	for i, v := range r {
 		s[i] = v
 	}
 
@@ -46,20 +49,20 @@ type EnvironmentResponse struct {
 	Environment Environment `json:"environment"`
 }
 
-// Format returns column headers and values for the resource.
-func (r EnvironmentResponse) Format() ([]string, []interface{}) {
-	s := make([]interface{}, 1)
-	s[0] = r.Environment
-
-	return []string{"ID", "Name"}, s
-}
-
 // Environment represents the single environment response from the
 // Postman API
 type Environment struct {
 	ID     string         `json:"id"`
 	Name   string         `json:"name"`
 	Values []KeyValuePair `json:"values"`
+}
+
+// Format returns column headers and values for the resource.
+func (r Environment) Format() ([]string, []interface{}) {
+	s := make([]interface{}, 1)
+	s[0] = r
+
+	return []string{"ID", "Name"}, s
 }
 
 // KeyValuePair represents a key and value in the Postman API.

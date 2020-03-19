@@ -17,8 +17,10 @@ limitations under the License.
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -123,25 +125,9 @@ func init() {
 		&cobra.Command{
 			Use: "user",
 			RunE: func(cmd *cobra.Command, args []string) error {
-				var representation resources.UserResponse
-				req := client.NewRequest(apiClient)
-				_, err := req.Get().
-					Path("me").
-					Body(&representation).
-					Do()
-
-				if err != nil {
-					return handleResponseError(err)
-				}
-
 				w := printers.GetNewTabWriter(os.Stdout)
 
-				var res resources.Formatter
-				res = representation
-				printer := printers.NewTablePrinter(printers.PrintOptions{})
-				printer.PrintResource(res, w)
-
-				return nil
+				return getUser(w)
 			},
 		},
 		&cobra.Command{
@@ -178,121 +164,85 @@ func init() {
 }
 
 func getAllCollections(w *tabwriter.Writer) error {
-	var representation resources.CollectionListResponse
-	req := client.NewRequest(apiClient)
-	_, err := req.Get().
-		Path("collections").
-		Body(&representation).
-		Do()
+	resource, err := service.Collections(context.Background())
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	var res resources.Formatter
-	res = representation
-	printer := printers.NewTablePrinter(printers.PrintOptions{})
-	printer.PrintResource(res, w)
+	print(w, resource)
 
 	return nil
 }
 
 func getSingleCollection(w *tabwriter.Writer, id string) error {
-	var representation resources.CollectionResponse
-	req := client.NewRequest(apiClient)
-	_, err := req.Get().
-		Path("collections", id).
-		Body(&representation).
-		Do()
+	resource, err := service.Collection(context.Background(), id)
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	var res resources.Formatter
-	res = representation
-	printer := printers.NewTablePrinter(printers.PrintOptions{})
-	printer.PrintResource(res, w)
+	print(w, resource)
 
 	return nil
 }
 
 func getAllEnvironments(w *tabwriter.Writer) error {
-	var representation resources.EnvironmentListResponse
-	req := client.NewRequest(apiClient)
-	_, err := req.Get().
-		Path("environments").
-		Body(&representation).
-		Do()
+	resource, err := service.Environments(context.Background())
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	var res resources.Formatter
-	res = representation
-	printer := printers.NewTablePrinter(printers.PrintOptions{})
-	printer.PrintResource(res, w)
+	print(w, resource)
 
 	return nil
 }
 
 func getSingleEnvironment(w *tabwriter.Writer, id string) error {
-	var representation resources.EnvironmentResponse
-	req := client.NewRequest(apiClient)
-	_, err := req.Get().
-		Path("environments", id).
-		Body(&representation).
-		Do()
+	resource, err := service.Environment(context.Background(), id)
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	var res resources.Formatter
-	res = representation
-	printer := printers.NewTablePrinter(printers.PrintOptions{})
-	printer.PrintResource(res, w)
+	print(w, resource)
 
 	return nil
 }
 
 func getAllAPIs(w *tabwriter.Writer) error {
-	var representation resources.APIListResponse
-	req := client.NewRequest(apiClient)
-	_, err := req.Get().
-		Path("apis").
-		Body(&representation).
-		Do()
+	resource, err := service.APIs(context.Background())
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	var res resources.Formatter
-	res = representation
-	printer := printers.NewTablePrinter(printers.PrintOptions{})
-	printer.PrintResource(res, w)
+	print(w, resource)
 
 	return nil
 }
 
 func getSingleAPI(w *tabwriter.Writer, id string) error {
-	var representation resources.APIResponse
-	req := client.NewRequest(apiClient)
-	_, err := req.Get().
-		Path("apis", id).
-		Body(&representation).
-		Do()
+	resource, err := service.API(context.Background(), id)
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	var res resources.Formatter
-	res = representation
-	printer := printers.NewTablePrinter(printers.PrintOptions{})
-	printer.PrintResource(res, w)
+	print(w, resource)
+
+	return nil
+}
+
+func getUser(w *tabwriter.Writer) error {
+	resource, err := service.User(context.Background())
+
+	if err != nil {
+		return handleResponseError(err)
+	}
+
+	print(w, resource)
 
 	return nil
 }
@@ -304,4 +254,12 @@ func handleResponseError(err error) error {
 	}
 
 	return err
+}
+
+func print(w io.Writer, f resources.Formatter) {
+	if f == nil {
+		return
+	}
+	printer := printers.NewTablePrinter(printers.PrintOptions{})
+	printer.PrintResource(f, w)
 }

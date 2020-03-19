@@ -19,13 +19,16 @@ package resources
 // CollectionListResponse is the top-level struct represenation of a collection
 // list response in the Postman API.
 type CollectionListResponse struct {
-	Collections []CollectionListItem `json:"collections"`
+	Collections CollectionListItems `json:"collections"`
 }
 
+// CollectionListItems is a slice of CollectionListItem
+type CollectionListItems []CollectionListItem
+
 // Format returns column headers and values for the resource.
-func (r CollectionListResponse) Format() ([]string, []interface{}) {
-	s := make([]interface{}, len(r.Collections))
-	for i, v := range r.Collections {
+func (r CollectionListItems) Format() ([]string, []interface{}) {
+	s := make([]interface{}, len(r))
+	for i, v := range r {
 		s[i] = v
 	}
 
@@ -46,20 +49,20 @@ type CollectionResponse struct {
 	Collection Collection `json:"collection"`
 }
 
-// Format returns column headers and values for the resource.
-func (r CollectionResponse) Format() ([]string, []interface{}) {
-	s := make([]interface{}, 1)
-	s[0] = r.Collection.Info
-
-	return []string{"ID", "Name"}, s
-}
-
 // Collection is a single item representation of the CollectionResponse.
 type Collection struct {
 	Info      CollectionInfo   `json:"info"`
 	Items     []CollectionItem `json:"item"`
 	Events    []Event          `json:"event,omitempty"`
 	Variables []Variable       `json:"variable,omitempty"`
+}
+
+// Format returns column headers and values for the resource.
+func (r Collection) Format() ([]string, []interface{}) {
+	s := make([]interface{}, 1)
+	s[0] = r.Info
+
+	return []string{"ID", "Name"}, s
 }
 
 // CollectionInfo contains metadata associated with a Collection.

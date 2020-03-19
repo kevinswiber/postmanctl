@@ -22,15 +22,15 @@ import (
 	"strings"
 )
 
-// APIClient allows for storing a base URL and containing common functionality.
-type APIClient struct {
+// Options allows for storing a base URL and containing common functionality.
+type Options struct {
 	base   *url.URL
 	APIKey string
 	Client *http.Client
 }
 
-// NewAPIClient creates a new instance of the Postman APIClient.
-func NewAPIClient(baseURL *url.URL, apiKey string, client *http.Client) (*APIClient, error) {
+// NewOptions creates a new instance of the Postman APIClient.
+func NewOptions(baseURL *url.URL, apiKey string, client *http.Client) *Options {
 	base := *baseURL
 	if !strings.HasSuffix(base.Path, "/") {
 		base.Path += "/"
@@ -38,9 +38,9 @@ func NewAPIClient(baseURL *url.URL, apiKey string, client *http.Client) (*APICli
 	base.RawQuery = ""
 	base.Fragment = ""
 
-	return &APIClient{
+	return &Options{
 		base:   &base,
 		APIKey: apiKey,
 		Client: client,
-	}, nil
+	}
 }

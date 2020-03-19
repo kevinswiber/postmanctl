@@ -24,16 +24,16 @@ type UserResponse struct {
 	User User `json:"user"`
 }
 
-// Format returns column headers and values for the resource.
-func (r UserResponse) Format() ([]string, []interface{}) {
-	s := make([]interface{}, 1)
-	s[0] = r.User
-
-	return []string{"ID"}, s
-}
-
 // User represents the user info associated with a user request in the
 // Postman API.
 type User struct {
 	ID json.Number `json:"id"`
+}
+
+// Format returns column headers and values for the resource.
+func (r User) Format() ([]string, []interface{}) {
+	s := make([]interface{}, 1)
+	s[0] = r
+
+	return []string{"ID"}, s
 }

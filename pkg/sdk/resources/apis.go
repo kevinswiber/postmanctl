@@ -18,13 +18,16 @@ package resources
 
 // APIListResponse represents the top-level APIs response from the Postman API.
 type APIListResponse struct {
-	APIs []APIListItem `json:"apis"`
+	APIs APIListItems `json:"apis"`
 }
 
+// APIListItems is a slice of APIListItem
+type APIListItems []APIListItem
+
 // Format returns column headers and values for the resource.
-func (r APIListResponse) Format() ([]string, []interface{}) {
-	s := make([]interface{}, len(r.APIs))
-	for i, v := range r.APIs {
+func (r APIListItems) Format() ([]string, []interface{}) {
+	s := make([]interface{}, len(r))
+	for i, v := range r {
 		s[i] = v
 	}
 
@@ -49,14 +52,6 @@ type APIResponse struct {
 	API API `json:"api"`
 }
 
-// Format returns column headers and values for the resource.
-func (r APIResponse) Format() ([]string, []interface{}) {
-	s := make([]interface{}, 1)
-	s[0] = r.API
-
-	return []string{"ID", "Name"}, s
-}
-
 // API represents a single item in an APIListResponse.
 type API struct {
 	CreatedBy   string `json:"createdBy"`
@@ -68,4 +63,12 @@ type API struct {
 	Description string `json:"description"`
 	CreatedAt   string `json:"createdAt"`
 	UpdatedAt   string `json:"updatedAt"`
+}
+
+// Format returns column headers and values for the resource.
+func (r API) Format() ([]string, []interface{}) {
+	s := make([]interface{}, 1)
+	s[0] = r
+
+	return []string{"ID", "Name"}, s
 }
