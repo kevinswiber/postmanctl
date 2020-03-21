@@ -104,22 +104,40 @@ func init() {
 		&cobra.Command{
 			Use:     "monitors",
 			Aliases: []string{"monitor", "mon"},
-			Run: func(cmd *cobra.Command, args []string) {
-				fmt.Println("get monitors")
+			RunE: func(cmd *cobra.Command, args []string) error {
+				w := printers.GetNewTabWriter(os.Stdout)
+
+				if len(args) > 0 {
+					return getSingleMonitor(w, args[0])
+				}
+
+				return getAllMonitors(w)
 			},
 		},
 		&cobra.Command{
 			Use:     "mocks",
 			Aliases: []string{"mock"},
-			Run: func(cmd *cobra.Command, args []string) {
-				fmt.Println("get mocks")
+			RunE: func(cmd *cobra.Command, args []string) error {
+				w := printers.GetNewTabWriter(os.Stdout)
+
+				if len(args) > 0 {
+					return getSingleMock(w, args[0])
+				}
+
+				return getAllMocks(w)
 			},
 		},
 		&cobra.Command{
 			Use:     "workspaces",
 			Aliases: []string{"workspace", "ws"},
-			Run: func(cmd *cobra.Command, args []string) {
-				fmt.Println("get workspaces")
+			RunE: func(cmd *cobra.Command, args []string) error {
+				w := printers.GetNewTabWriter(os.Stdout)
+
+				if len(args) > 0 {
+					return getSingleWorkspace(w, args[0])
+				}
+
+				return getAllWorkspaces(w)
 			},
 		},
 		&cobra.Command{
@@ -225,6 +243,78 @@ func getAllAPIs(w *tabwriter.Writer) error {
 
 func getSingleAPI(w *tabwriter.Writer, id string) error {
 	resource, err := service.API(context.Background(), id)
+
+	if err != nil {
+		return handleResponseError(err)
+	}
+
+	print(w, resource)
+
+	return nil
+}
+
+func getAllWorkspaces(w *tabwriter.Writer) error {
+	resource, err := service.Workspaces(context.Background())
+
+	if err != nil {
+		return handleResponseError(err)
+	}
+
+	print(w, resource)
+
+	return nil
+}
+
+func getSingleWorkspace(w *tabwriter.Writer, id string) error {
+	resource, err := service.Workspace(context.Background(), id)
+
+	if err != nil {
+		return handleResponseError(err)
+	}
+
+	print(w, resource)
+
+	return nil
+}
+
+func getAllMonitors(w *tabwriter.Writer) error {
+	resource, err := service.Monitors(context.Background())
+
+	if err != nil {
+		return handleResponseError(err)
+	}
+
+	print(w, resource)
+
+	return nil
+}
+
+func getSingleMonitor(w *tabwriter.Writer, id string) error {
+	resource, err := service.Monitor(context.Background(), id)
+
+	if err != nil {
+		return handleResponseError(err)
+	}
+
+	print(w, resource)
+
+	return nil
+}
+
+func getAllMocks(w *tabwriter.Writer) error {
+	resource, err := service.Mocks(context.Background())
+
+	if err != nil {
+		return handleResponseError(err)
+	}
+
+	print(w, resource)
+
+	return nil
+}
+
+func getSingleMock(w *tabwriter.Writer, id string) error {
+	resource, err := service.Mock(context.Background(), id)
 
 	if err != nil {
 		return handleResponseError(err)

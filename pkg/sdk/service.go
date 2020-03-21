@@ -106,6 +106,66 @@ func (s *Service) User(ctx context.Context) (*resources.User, error) {
 	return &resource.User, nil
 }
 
+// Workspaces returns the workspaces for the current user.
+func (s *Service) Workspaces(ctx context.Context) (*resources.WorkspaceListItems, error) {
+	var resource resources.WorkspaceListResponse
+	if _, err := s.get(ctx, &resource, "workspaces"); err != nil {
+		return nil, err
+	}
+
+	return &resource.Workspaces, nil
+}
+
+// Workspace returns a single workspace for the current user.
+func (s *Service) Workspace(ctx context.Context, id string) (*resources.Workspace, error) {
+	var resource resources.WorkspaceResponse
+	if _, err := s.get(ctx, &resource, "workspaces", id); err != nil {
+		return nil, err
+	}
+
+	return &resource.Workspace, nil
+}
+
+// Monitors returns the monitors for the current user.
+func (s *Service) Monitors(ctx context.Context) (*resources.MonitorListItems, error) {
+	var resource resources.MonitorListResponse
+	if _, err := s.get(ctx, &resource, "monitors"); err != nil {
+		return nil, err
+	}
+
+	return &resource.Monitors, nil
+}
+
+// Monitor returns a single monitor for the current user.
+func (s *Service) Monitor(ctx context.Context, id string) (*resources.Monitor, error) {
+	var resource resources.MonitorResponse
+	if _, err := s.get(ctx, &resource, "monitors", id); err != nil {
+		return nil, err
+	}
+
+	return &resource.Monitor, nil
+}
+
+// Mocks returns the mocks for the current user.
+func (s *Service) Mocks(ctx context.Context) (*resources.MockListItems, error) {
+	var resource resources.MockListResponse
+	if _, err := s.get(ctx, &resource, "mocks"); err != nil {
+		return nil, err
+	}
+
+	return &resource.Mocks, nil
+}
+
+// Mock returns a single mock for the current user.
+func (s *Service) Mock(ctx context.Context, id string) (*resources.Mock, error) {
+	var resource resources.MockResponse
+	if _, err := s.get(ctx, &resource, "mocks", id); err != nil {
+		return nil, err
+	}
+
+	return &resource.Mock, nil
+}
+
 func (s *Service) get(ctx context.Context, r interface{}, path ...string) (*http.Response, error) {
 	req := client.NewRequestWithContext(ctx, s.Options)
 	res, err := req.Get().
