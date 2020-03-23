@@ -96,6 +96,57 @@ func (s *Service) API(ctx context.Context, id string) (*resources.API, error) {
 	return &resource.API, nil
 }
 
+// APIVersions returns all API Versions.
+func (s *Service) APIVersions(ctx context.Context, apiID string) (*resources.APIVersionListItems, error) {
+	var resource resources.APIVersionListResponse
+	if _, err := s.get(ctx, &resource, "apis", apiID, "versions"); err != nil {
+		return nil, err
+	}
+
+	return &resource.APIVersions, nil
+}
+
+// APIVersion returns a single API Version.
+func (s *Service) APIVersion(ctx context.Context, apiID, id string) (*resources.APIVersion, error) {
+	var resource resources.APIVersionResponse
+	if _, err := s.get(ctx, &resource, "apis", apiID, "versions", id); err != nil {
+		return nil, err
+	}
+
+	return &resource.APIVersion, nil
+}
+
+// Schema returns a single schema for an API version.
+func (s *Service) Schema(ctx context.Context, apiID, apiVersionID, id string) (*resources.Schema, error) {
+	var resource resources.SchemaResponse
+	if _, err := s.get(ctx, &resource, "apis", apiID, "versions", apiVersionID, "schemas", id); err != nil {
+		return nil, err
+	}
+
+	return &resource.Schema, nil
+}
+
+// APIRelations returns the linked relations of an API
+func (s *Service) APIRelations(ctx context.Context, apiID, apiVersionID string) (*resources.APIRelations, error) {
+	var resource resources.APIRelationsResource
+	if _, err := s.get(ctx, &resource, "apis", apiID, "versions", apiVersionID, "relations"); err != nil {
+		return nil, err
+	}
+
+	return &resource.Relations, nil
+}
+
+// FormattedAPIRelationItems returns the formatted linked relations of an API
+func (s *Service) FormattedAPIRelationItems(ctx context.Context, apiID, apiVersionID string) (*resources.FormattedAPIRelationItems, error) {
+	r, err := s.APIRelations(ctx, apiID, apiVersionID)
+	if err != nil {
+		return nil, err
+	}
+
+	f := resources.NewFormattedAPIRelationItems(r)
+	return &f, nil
+}
+
 // User returns the current user.
 func (s *Service) User(ctx context.Context) (*resources.User, error) {
 	var resource resources.UserResponse

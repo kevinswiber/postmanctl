@@ -73,7 +73,60 @@ to quickly create a Cobra application.`,
 	},
 }
 
+var (
+	forAPI        string
+	forAPIVersion string
+)
+
 func init() {
+	apiVersionsCmd := &cobra.Command{
+		Use:     "api-versions",
+		Aliases: []string{"api-version"},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			w := printers.GetNewTabWriter(os.Stdout)
+
+			if len(args) > 0 {
+				return getSingleAPIVersion(w, forAPI, args[0])
+			}
+
+			return getAllAPIVersions(w, forAPI)
+		},
+	}
+
+	apiVersionsCmd.Flags().StringVar(&forAPI, "for-api", "", "the associated API ID (required)")
+	apiVersionsCmd.MarkFlagRequired("for-api")
+
+	schemaCmd := &cobra.Command{
+		Use:  "schema",
+		Args: cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			w := printers.GetNewTabWriter(os.Stdout)
+
+			return getSchema(w, forAPI, forAPIVersion, args[0])
+		},
+	}
+
+	schemaCmd.Flags().StringVar(&forAPI, "for-api", "", "the associated API ID (required)")
+	schemaCmd.MarkFlagRequired("for-api")
+
+	schemaCmd.Flags().StringVar(&forAPIVersion, "for-api-version", "", "the associated API Version ID (required)")
+	schemaCmd.MarkFlagRequired("for-api-version")
+
+	apiRelationsCmd := &cobra.Command{
+		Use: "api-relations",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			w := printers.GetNewTabWriter(os.Stdout)
+
+			return getAPIRelations(w, forAPI, forAPIVersion)
+		},
+	}
+
+	apiRelationsCmd.Flags().StringVar(&forAPI, "for-api", "", "the associated API ID (required)")
+	apiRelationsCmd.MarkFlagRequired("for-api")
+
+	apiRelationsCmd.Flags().StringVar(&forAPIVersion, "for-api-version", "", "the associated API Version ID (required)")
+	apiRelationsCmd.MarkFlagRequired("for-api-version")
+
 	getCmd.AddCommand(
 		&cobra.Command{
 			Use:     "collections",
@@ -161,20 +214,9 @@ func init() {
 				return getAllAPIs(w)
 			},
 		},
-		&cobra.Command{
-			Use:     "api-versions",
-			Aliases: []string{"api-version"},
-			Run: func(cmd *cobra.Command, args []string) {
-				fmt.Println("get api-versions")
-			},
-		},
-		&cobra.Command{
-			Use:     "api-relations",
-			Aliases: []string{"api-relation"},
-			Run: func(cmd *cobra.Command, args []string) {
-				fmt.Println("get api-relations")
-			},
-		},
+		apiVersionsCmd,
+		apiRelationsCmd,
+		schemaCmd,
 	)
 
 	getCmd.PersistentFlags().VarP(&outputFormat, "output", "o", "output format (json, yaml, jsonpath)")
@@ -327,6 +369,54 @@ func getSingleMock(w *tabwriter.Writer, id string) error {
 
 func getUser(w *tabwriter.Writer) error {
 	resource, err := service.User(context.Background())
+
+	if err != nil {
+		return handleResponseError(err)
+	}
+
+	print(w, resource)
+
+	return nil
+}
+
+func getAllAPIVersions(w *tabwriter.Writer, apiID string) error {
+	resource, err := service.APIVersions(context.Background(), apiID)
+
+	if err != nil {
+		return handleResponseError(err)
+	}
+
+	print(w, resource)
+
+	return nil
+}
+
+func getSingleAPIVersion(w *tabwriter.Writer, apiID, id string) error {
+	resource, err := service.APIVersion(context.Background(), apiID, id)
+
+	if err != nil {
+		return handleResponseError(err)
+	}
+
+	print(w, resource)
+
+	return nil
+}
+
+func getSchema(w *tabwriter.Writer, apiID, apiVersionID, id string) error {
+	resource, err := service.Schema(context.Background(), apiID, apiVersionID, id)
+
+	if err != nil {
+		return handleResponseError(err)
+	}
+
+	print(w, resource)
+
+	return nil
+}
+
+func getAPIRelations(w *tabwriter.Writer, apiID, apiVersionID string) error {
+	resource, err := service.FormattedAPIRelationItems(context.Background(), apiID, apiVersionID)
 
 	if err != nil {
 		return handleResponseError(err)

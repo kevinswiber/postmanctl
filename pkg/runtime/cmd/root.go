@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 
 	"github.com/kevinswiber/postmanctl/pkg/runtime/config"
 	"github.com/kevinswiber/postmanctl/pkg/sdk"
@@ -96,7 +97,8 @@ func initConfig() {
 		os.Exit(1)
 	}
 
-	if val, ok := cfg.Contexts[cfg.CurrentContext]; ok {
+	// viper keys are case-insensitive
+	if val, ok := cfg.Contexts[strings.ToLower(cfg.CurrentContext)]; ok {
 		configContext = val
 		if len(configContext.APIRoot) == 0 {
 			configContext.APIRoot = "https://api.postman.com"
