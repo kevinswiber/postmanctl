@@ -112,12 +112,12 @@ type APIRelationsResource struct {
 
 // APIRelations provides the top-level relations representation for APIs.
 type APIRelations struct {
-	Documentation   map[string]LinkedCollection `json:"documentation"`
-	ContractTest    map[string]LinkedCollection `json:"contracttest"`
-	TestSuite       map[string]LinkedCollection `json:"testsuite"`
-	IntegrationTest map[string]LinkedCollection `json:"integrationtest"`
-	Mock            map[string]LinkedMock       `json:"mock"`
-	Monitor         map[string]LinkedMonitor    `json:"monitor"`
+	Documentation   map[string]LinkedCollection `json:"documentation,omitempty"`
+	ContractTest    map[string]LinkedCollection `json:"contracttest,omitempty"`
+	TestSuite       map[string]LinkedCollection `json:"testsuite,omitempty"`
+	IntegrationTest map[string]LinkedCollection `json:"integrationtest,omitempty"`
+	Mock            map[string]LinkedMock       `json:"mock,omitempty"`
+	Monitor         map[string]LinkedMonitor    `json:"monitor,omitempty"`
 }
 
 // LinkedCollection describes a single linked collection representation.

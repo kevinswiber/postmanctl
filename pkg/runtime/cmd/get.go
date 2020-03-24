@@ -17,18 +17,19 @@ limitations under the License.
 package cmd
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"os"
-
-	"github.com/spf13/cobra"
+	"strings"
 
 	"github.com/kevinswiber/postmanctl/pkg/sdk/client"
 	"github.com/kevinswiber/postmanctl/pkg/sdk/printers"
 	"github.com/kevinswiber/postmanctl/pkg/sdk/resources"
-	"github.com/liggitt/tabwriter"
+	"github.com/spf13/cobra"
+	"k8s.io/client-go/util/jsonpath"
 )
 
 var outputFormat OutputFormatValue
@@ -45,12 +46,12 @@ func (o *OutputFormatValue) String() string {
 
 // Set creates the flag value.
 func (o *OutputFormatValue) Set(v string) error {
-	if v == "json" || v == "yaml" {
+	if v == "json" || strings.HasPrefix(v, "jsonpath=") {
 		o.value = v
 		return nil
 	}
 
-	return errors.New("output format must be json, yaml, or jsonpath")
+	return errors.New("output format must be json or jsonpath")
 }
 
 // Type returns the type of this value.
@@ -61,16 +62,7 @@ func (o *OutputFormatValue) Type() string {
 // getCmd represents the get command
 var getCmd = &cobra.Command{
 	Use:   "get",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("You must specify the type of resource to get (e.g., collections, environments, monitors, mocks)")
-	},
+	Short: "Retrieve Postman resources.",
 }
 
 var (
@@ -83,13 +75,11 @@ func init() {
 		Use:     "api-versions",
 		Aliases: []string{"api-version"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			w := printers.GetNewTabWriter(os.Stdout)
-
 			if len(args) > 0 {
-				return getSingleAPIVersion(w, forAPI, args[0])
+				return getSingleAPIVersion(forAPI, args[0])
 			}
 
-			return getAllAPIVersions(w, forAPI)
+			return getAllAPIVersions(forAPI)
 		},
 	}
 
@@ -100,9 +90,7 @@ func init() {
 		Use:  "schema",
 		Args: cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			w := printers.GetNewTabWriter(os.Stdout)
-
-			return getSchema(w, forAPI, forAPIVersion, args[0])
+			return getSchema(forAPI, forAPIVersion, args[0])
 		},
 	}
 
@@ -115,9 +103,10 @@ func init() {
 	apiRelationsCmd := &cobra.Command{
 		Use: "api-relations",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			w := printers.GetNewTabWriter(os.Stdout)
-
-			return getAPIRelations(w, forAPI, forAPIVersion)
+			if outputFormat.value == "" {
+				return getFormattedAPIRelations(forAPI, forAPIVersion)
+			}
+			return getAPIRelations(forAPI, forAPIVersion)
 		},
 	}
 
@@ -132,86 +121,72 @@ func init() {
 			Use:     "collections",
 			Aliases: []string{"collection", "co"},
 			RunE: func(cmd *cobra.Command, args []string) error {
-				w := printers.GetNewTabWriter(os.Stdout)
-
 				if len(args) > 0 {
-					return getSingleCollection(w, args[0])
+					return getSingleCollection(args[0])
 				}
 
-				return getAllCollections(w)
+				return getAllCollections()
 			},
 		},
 		&cobra.Command{
 			Use:     "environments",
 			Aliases: []string{"environment", "env"},
 			RunE: func(cmd *cobra.Command, args []string) error {
-				w := printers.GetNewTabWriter(os.Stdout)
-
 				if len(args) > 0 {
-					return getSingleEnvironment(w, args[0])
+					return getSingleEnvironment(args[0])
 				}
 
-				return getAllEnvironments(w)
+				return getAllEnvironments()
 			},
 		},
 		&cobra.Command{
 			Use:     "monitors",
 			Aliases: []string{"monitor", "mon"},
 			RunE: func(cmd *cobra.Command, args []string) error {
-				w := printers.GetNewTabWriter(os.Stdout)
-
 				if len(args) > 0 {
-					return getSingleMonitor(w, args[0])
+					return getSingleMonitor(args[0])
 				}
 
-				return getAllMonitors(w)
+				return getAllMonitors()
 			},
 		},
 		&cobra.Command{
 			Use:     "mocks",
 			Aliases: []string{"mock"},
 			RunE: func(cmd *cobra.Command, args []string) error {
-				w := printers.GetNewTabWriter(os.Stdout)
-
 				if len(args) > 0 {
-					return getSingleMock(w, args[0])
+					return getSingleMock(args[0])
 				}
 
-				return getAllMocks(w)
+				return getAllMocks()
 			},
 		},
 		&cobra.Command{
 			Use:     "workspaces",
 			Aliases: []string{"workspace", "ws"},
 			RunE: func(cmd *cobra.Command, args []string) error {
-				w := printers.GetNewTabWriter(os.Stdout)
-
 				if len(args) > 0 {
-					return getSingleWorkspace(w, args[0])
+					return getSingleWorkspace(args[0])
 				}
 
-				return getAllWorkspaces(w)
+				return getAllWorkspaces()
 			},
 		},
 		&cobra.Command{
 			Use: "user",
 			RunE: func(cmd *cobra.Command, args []string) error {
-				w := printers.GetNewTabWriter(os.Stdout)
-
-				return getUser(w)
+				return getUser()
 			},
 		},
 		&cobra.Command{
 			Use:     "apis",
 			Aliases: []string{"api"},
 			RunE: func(cmd *cobra.Command, args []string) error {
-				w := printers.GetNewTabWriter(os.Stdout)
-
 				if len(args) > 0 {
-					return getSingleAPI(w, args[0])
+					return getSingleAPI(args[0])
 				}
 
-				return getAllAPIs(w)
+				return getAllAPIs()
 			},
 		},
 		apiVersionsCmd,
@@ -219,210 +194,222 @@ func init() {
 		schemaCmd,
 	)
 
-	getCmd.PersistentFlags().VarP(&outputFormat, "output", "o", "output format (json, yaml, jsonpath)")
+	getCmd.PersistentFlags().VarP(&outputFormat, "output", "o", "output format (json, jsonpath)")
 	rootCmd.AddCommand(getCmd)
 }
 
-func getAllCollections(w *tabwriter.Writer) error {
+func getAllCollections() error {
 	resource, err := service.Collections(context.Background())
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	print(w, resource)
+	print(resource)
 
 	return nil
 }
 
-func getSingleCollection(w *tabwriter.Writer, id string) error {
+func getSingleCollection(id string) error {
 	resource, err := service.Collection(context.Background(), id)
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	print(w, resource)
+	print(resource)
 
 	return nil
 }
 
-func getAllEnvironments(w *tabwriter.Writer) error {
+func getAllEnvironments() error {
 	resource, err := service.Environments(context.Background())
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	print(w, resource)
+	print(resource)
 
 	return nil
 }
 
-func getSingleEnvironment(w *tabwriter.Writer, id string) error {
+func getSingleEnvironment(id string) error {
 	resource, err := service.Environment(context.Background(), id)
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	print(w, resource)
+	print(resource)
 
 	return nil
 }
 
-func getAllAPIs(w *tabwriter.Writer) error {
+func getAllAPIs() error {
 	resource, err := service.APIs(context.Background())
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	print(w, resource)
+	print(resource)
 
 	return nil
 }
 
-func getSingleAPI(w *tabwriter.Writer, id string) error {
+func getSingleAPI(id string) error {
 	resource, err := service.API(context.Background(), id)
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	print(w, resource)
+	print(resource)
 
 	return nil
 }
 
-func getAllWorkspaces(w *tabwriter.Writer) error {
+func getAllWorkspaces() error {
 	resource, err := service.Workspaces(context.Background())
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	print(w, resource)
+	print(resource)
 
 	return nil
 }
 
-func getSingleWorkspace(w *tabwriter.Writer, id string) error {
+func getSingleWorkspace(id string) error {
 	resource, err := service.Workspace(context.Background(), id)
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	print(w, resource)
+	print(resource)
 
 	return nil
 }
 
-func getAllMonitors(w *tabwriter.Writer) error {
+func getAllMonitors() error {
 	resource, err := service.Monitors(context.Background())
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	print(w, resource)
+	print(resource)
 
 	return nil
 }
 
-func getSingleMonitor(w *tabwriter.Writer, id string) error {
+func getSingleMonitor(id string) error {
 	resource, err := service.Monitor(context.Background(), id)
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	print(w, resource)
+	print(resource)
 
 	return nil
 }
 
-func getAllMocks(w *tabwriter.Writer) error {
+func getAllMocks() error {
 	resource, err := service.Mocks(context.Background())
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	print(w, resource)
+	print(resource)
 
 	return nil
 }
 
-func getSingleMock(w *tabwriter.Writer, id string) error {
+func getSingleMock(id string) error {
 	resource, err := service.Mock(context.Background(), id)
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	print(w, resource)
+	print(resource)
 
 	return nil
 }
 
-func getUser(w *tabwriter.Writer) error {
+func getUser() error {
 	resource, err := service.User(context.Background())
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	print(w, resource)
+	print(resource)
 
 	return nil
 }
 
-func getAllAPIVersions(w *tabwriter.Writer, apiID string) error {
+func getAllAPIVersions(apiID string) error {
 	resource, err := service.APIVersions(context.Background(), apiID)
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	print(w, resource)
+	print(resource)
 
 	return nil
 }
 
-func getSingleAPIVersion(w *tabwriter.Writer, apiID, id string) error {
+func getSingleAPIVersion(apiID, id string) error {
 	resource, err := service.APIVersion(context.Background(), apiID, id)
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	print(w, resource)
+	print(resource)
 
 	return nil
 }
 
-func getSchema(w *tabwriter.Writer, apiID, apiVersionID, id string) error {
+func getSchema(apiID, apiVersionID, id string) error {
 	resource, err := service.Schema(context.Background(), apiID, apiVersionID, id)
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	print(w, resource)
+	print(resource)
 
 	return nil
 }
 
-func getAPIRelations(w *tabwriter.Writer, apiID, apiVersionID string) error {
+func getAPIRelations(apiID, apiVersionID string) error {
+	resource, err := service.APIRelations(context.Background(), apiID, apiVersionID)
+
+	if err != nil {
+		return handleResponseError(err)
+	}
+
+	print(resource)
+
+	return nil
+}
+
+func getFormattedAPIRelations(apiID, apiVersionID string) error {
 	resource, err := service.FormattedAPIRelationItems(context.Background(), apiID, apiVersionID)
 
 	if err != nil {
 		return handleResponseError(err)
 	}
 
-	print(w, resource)
+	print(resource)
 
 	return nil
 }
@@ -436,10 +423,51 @@ func handleResponseError(err error) error {
 	return err
 }
 
-func print(w io.Writer, f resources.Formatter) {
-	if f == nil {
+func print(r interface{}) {
+	if r == nil {
 		return
 	}
+
+	if outputFormat.value == "json" {
+		t, err := json.MarshalIndent(&r, "", "  ")
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err)
+		}
+		fmt.Println(string(t))
+	} else if strings.HasPrefix(outputFormat.value, "jsonpath=") {
+		tmpl := outputFormat.value[9:]
+		j := jsonpath.New("out")
+		if err := j.Parse(tmpl); err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err)
+			os.Exit(1)
+		}
+
+		t, err := json.Marshal(&r)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err)
+			os.Exit(1)
+		}
+
+		var queryObj interface{}
+		queryObj = map[string]interface{}{}
+		if err := json.Unmarshal(t, &queryObj); err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err)
+			os.Exit(1)
+		}
+
+		buf := bytes.NewBuffer(nil)
+		j.Execute(buf, queryObj)
+
+		fmt.Println(buf)
+	} else {
+		var f resources.Formatter
+		f = r.(resources.Formatter)
+		printTable(f)
+	}
+}
+
+func printTable(f resources.Formatter) {
+	w := printers.GetNewTabWriter(os.Stdout)
 	printer := printers.NewTablePrinter(printers.PrintOptions{})
 	printer.PrintResource(f, w)
 }
