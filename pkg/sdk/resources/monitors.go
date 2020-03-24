@@ -18,6 +18,7 @@ package resources
 
 import (
 	"encoding/json"
+	"strconv"
 	"time"
 )
 
@@ -42,10 +43,25 @@ func (r MonitorListItems) Format() ([]string, []interface{}) {
 
 // MonitorListItem represents a single item in an MonitorListResponse.
 type MonitorListItem struct {
-	ID    string      `json:"id"`
-	Name  string      `json:"name"`
-	UID   string      `json:"uid"`
-	Owner json.Number `json:"owner"`
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	UID   string `json:"uid"`
+	Owner string `json:"owner"`
+}
+
+// UnmarshalJSON sets the receiver to a copy of data.
+func (m *MonitorListItem) UnmarshalJSON(data []byte) error {
+	var v map[string]interface{}
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+
+	m.ID = v["id"].(string)
+	m.Name = v["name"].(string)
+	m.UID = v["uid"].(string)
+	m.Owner = strconv.Itoa(int(v["owner"].(float64)))
+
+	return nil
 }
 
 // MonitorResponse is the top-level monitor response from the
@@ -57,6 +73,19 @@ type MonitorResponse struct {
 // Monitor represents the single monitor response from the
 // Postman API
 type Monitor struct {
+	ID             string         `json:"id"`
+	Name           string         `json:"name"`
+	UID            string         `json:"uid"`
+	Owner          string         `json:"owner"`
+	CollectionUID  string         `json:"collectionUid"`
+	EnvironmentUID string         `json:"environmentUid"`
+	Options        MonitorOptions `json:"options"`
+	Notifications  Notifications  `json:"notifications"`
+	Distribution   []interface{}  `json:"distribution"`
+	Schedule       Schedule       `json:"schedule"`
+}
+
+type monitor struct {
 	ID             string         `json:"id"`
 	Name           string         `json:"name"`
 	UID            string         `json:"uid"`
@@ -75,6 +104,27 @@ func (r Monitor) Format() ([]string, []interface{}) {
 	s[0] = r
 
 	return []string{"ID", "Name"}, s
+}
+
+// UnmarshalJSON sets the receiver to a copy of data.
+func (r *Monitor) UnmarshalJSON(data []byte) error {
+	var m monitor
+	if err := json.Unmarshal(data, &m); err != nil {
+		return err
+	}
+
+	r.ID = m.ID
+	r.Name = m.Name
+	r.UID = m.UID
+	r.Owner = strconv.Itoa(m.Owner)
+	r.CollectionUID = m.CollectionUID
+	r.EnvironmentUID = m.EnvironmentUID
+	r.Options = m.Options
+	r.Notifications = m.Notifications
+	r.Distribution = m.Distribution
+	r.Schedule = m.Schedule
+
+	return nil
 }
 
 // MonitorSlice is a slice of Monitor.

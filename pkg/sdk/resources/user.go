@@ -16,7 +16,10 @@ limitations under the License.
 
 package resources
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"strconv"
+)
 
 // UserResponse represents the top-level struct of a user response in the
 // Postman API.
@@ -27,7 +30,19 @@ type UserResponse struct {
 // User represents the user info associated with a user request in the
 // Postman API.
 type User struct {
-	ID json.Number `json:"id"`
+	ID string `json:"id"`
+}
+
+// UnmarshalJSON sets the receiver to a copy of data.
+func (r *User) UnmarshalJSON(data []byte) error {
+	var v map[string]interface{}
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+
+	r.ID = strconv.Itoa(int(v["id"].(float64)))
+
+	return nil
 }
 
 // Format returns column headers and values for the resource.
