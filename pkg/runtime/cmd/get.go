@@ -76,7 +76,7 @@ func init() {
 		Aliases: []string{"api-version"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 0 {
-				return getSingleAPIVersion(forAPI, args[0])
+				return getSingleAPIVersion(forAPI, args...)
 			}
 
 			return getAllAPIVersions(forAPI)
@@ -122,7 +122,7 @@ func init() {
 			Aliases: []string{"collection", "co"},
 			RunE: func(cmd *cobra.Command, args []string) error {
 				if len(args) > 0 {
-					return getSingleCollection(args[0])
+					return getSingleCollection(args...)
 				}
 
 				return getAllCollections()
@@ -133,7 +133,7 @@ func init() {
 			Aliases: []string{"environment", "env"},
 			RunE: func(cmd *cobra.Command, args []string) error {
 				if len(args) > 0 {
-					return getSingleEnvironment(args[0])
+					return getSingleEnvironment(args...)
 				}
 
 				return getAllEnvironments()
@@ -144,7 +144,7 @@ func init() {
 			Aliases: []string{"monitor", "mon"},
 			RunE: func(cmd *cobra.Command, args []string) error {
 				if len(args) > 0 {
-					return getSingleMonitor(args[0])
+					return getSingleMonitor(args...)
 				}
 
 				return getAllMonitors()
@@ -155,7 +155,7 @@ func init() {
 			Aliases: []string{"mock"},
 			RunE: func(cmd *cobra.Command, args []string) error {
 				if len(args) > 0 {
-					return getSingleMock(args[0])
+					return getSingleMock(args...)
 				}
 
 				return getAllMocks()
@@ -166,7 +166,7 @@ func init() {
 			Aliases: []string{"workspace", "ws"},
 			RunE: func(cmd *cobra.Command, args []string) error {
 				if len(args) > 0 {
-					return getSingleWorkspace(args[0])
+					return getSingleWorkspace(args...)
 				}
 
 				return getAllWorkspaces()
@@ -183,7 +183,7 @@ func init() {
 			Aliases: []string{"api"},
 			RunE: func(cmd *cobra.Command, args []string) error {
 				if len(args) > 0 {
-					return getSingleAPI(args[0])
+					return getSingleAPI(args...)
 				}
 
 				return getAllAPIs()
@@ -210,14 +210,19 @@ func getAllCollections() error {
 	return nil
 }
 
-func getSingleCollection(id string) error {
-	resource, err := service.Collection(context.Background(), id)
+func getSingleCollection(ids ...string) error {
+	r := make(resources.CollectionSlice, len(ids))
+	for i, id := range ids {
+		resource, err := service.Collection(context.Background(), id)
 
-	if err != nil {
-		return handleResponseError(err)
+		if err != nil {
+			return handleResponseError(err)
+		}
+
+		r[i] = resource
 	}
 
-	print(resource)
+	print(r)
 
 	return nil
 }
@@ -234,14 +239,19 @@ func getAllEnvironments() error {
 	return nil
 }
 
-func getSingleEnvironment(id string) error {
-	resource, err := service.Environment(context.Background(), id)
+func getSingleEnvironment(ids ...string) error {
+	r := make(resources.EnvironmentSlice, len(ids))
+	for i, id := range ids {
+		resource, err := service.Environment(context.Background(), id)
 
-	if err != nil {
-		return handleResponseError(err)
+		if err != nil {
+			return handleResponseError(err)
+		}
+
+		r[i] = resource
 	}
 
-	print(resource)
+	print(r)
 
 	return nil
 }
@@ -258,14 +268,19 @@ func getAllAPIs() error {
 	return nil
 }
 
-func getSingleAPI(id string) error {
-	resource, err := service.API(context.Background(), id)
+func getSingleAPI(ids ...string) error {
+	r := make(resources.APISlice, len(ids))
+	for i, id := range ids {
+		resource, err := service.API(context.Background(), id)
 
-	if err != nil {
-		return handleResponseError(err)
+		if err != nil {
+			return handleResponseError(err)
+		}
+
+		r[i] = resource
 	}
 
-	print(resource)
+	print(r)
 
 	return nil
 }
@@ -282,14 +297,19 @@ func getAllWorkspaces() error {
 	return nil
 }
 
-func getSingleWorkspace(id string) error {
-	resource, err := service.Workspace(context.Background(), id)
+func getSingleWorkspace(ids ...string) error {
+	r := make(resources.WorkspaceSlice, len(ids))
+	for i, id := range ids {
+		resource, err := service.Workspace(context.Background(), id)
 
-	if err != nil {
-		return handleResponseError(err)
+		if err != nil {
+			return handleResponseError(err)
+		}
+
+		r[i] = resource
 	}
 
-	print(resource)
+	print(r)
 
 	return nil
 }
@@ -306,14 +326,19 @@ func getAllMonitors() error {
 	return nil
 }
 
-func getSingleMonitor(id string) error {
-	resource, err := service.Monitor(context.Background(), id)
+func getSingleMonitor(ids ...string) error {
+	r := make(resources.MonitorSlice, len(ids))
+	for i, id := range ids {
+		resource, err := service.Monitor(context.Background(), id)
 
-	if err != nil {
-		return handleResponseError(err)
+		if err != nil {
+			return handleResponseError(err)
+		}
+
+		r[i] = resource
 	}
 
-	print(resource)
+	print(r)
 
 	return nil
 }
@@ -330,14 +355,19 @@ func getAllMocks() error {
 	return nil
 }
 
-func getSingleMock(id string) error {
-	resource, err := service.Mock(context.Background(), id)
+func getSingleMock(ids ...string) error {
+	r := make(resources.MockSlice, len(ids))
+	for i, id := range ids {
+		resource, err := service.Mock(context.Background(), id)
 
-	if err != nil {
-		return handleResponseError(err)
+		if err != nil {
+			return handleResponseError(err)
+		}
+
+		r[i] = resource
 	}
 
-	print(resource)
+	print(r)
 
 	return nil
 }
@@ -366,14 +396,19 @@ func getAllAPIVersions(apiID string) error {
 	return nil
 }
 
-func getSingleAPIVersion(apiID, id string) error {
-	resource, err := service.APIVersion(context.Background(), apiID, id)
+func getSingleAPIVersion(apiID string, ids ...string) error {
+	r := make(resources.APIVersionSlice, len(ids))
+	for i, id := range ids {
+		resource, err := service.APIVersion(context.Background(), apiID, id)
 
-	if err != nil {
-		return handleResponseError(err)
+		if err != nil {
+			return handleResponseError(err)
+		}
+
+		r[i] = resource
 	}
 
-	print(resource)
+	print(r)
 
 	return nil
 }

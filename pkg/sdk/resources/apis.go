@@ -72,3 +72,16 @@ func (r API) Format() ([]string, []interface{}) {
 
 	return []string{"ID", "Name"}, s
 }
+
+// APISlice is a slice of API
+type APISlice []*API
+
+// Format returns column headers and values for the resource.
+func (r APISlice) Format() ([]string, []interface{}) {
+	s := make([]interface{}, len(r))
+	for i, v := range r {
+		s[i] = v
+	}
+
+	return []string{"ID", "Name"}, s
+}

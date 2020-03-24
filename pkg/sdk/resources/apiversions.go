@@ -75,3 +75,16 @@ func (r APIVersion) Format() ([]string, []interface{}) {
 
 	return []string{"ID", "Name"}, s
 }
+
+// APIVersionSlice is a slice of APIVersion.
+type APIVersionSlice []*APIVersion
+
+// Format returns column headers and values for the resource.
+func (r APIVersionSlice) Format() ([]string, []interface{}) {
+	s := make([]interface{}, len(r))
+	for i, v := range r {
+		s[i] = v
+	}
+
+	return []string{"ID", "Name"}, s
+}

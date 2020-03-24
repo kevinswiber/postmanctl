@@ -77,6 +77,19 @@ func (r Monitor) Format() ([]string, []interface{}) {
 	return []string{"ID", "Name"}, s
 }
 
+// MonitorSlice is a slice of Monitor.
+type MonitorSlice []*Monitor
+
+// Format returns column headers and values for the resource.
+func (r MonitorSlice) Format() ([]string, []interface{}) {
+	s := make([]interface{}, len(r))
+	for i, v := range r {
+		s[i] = v
+	}
+
+	return []string{"ID", "Name"}, s
+}
+
 // MonitorOptions list options for a monitor.
 type MonitorOptions struct {
 	StrictSSL       bool        `json:"strictSSL"`

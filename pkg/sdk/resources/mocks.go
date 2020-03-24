@@ -80,3 +80,16 @@ func (r Mock) Format() ([]string, []interface{}) {
 
 	return []string{"ID", "Name"}, s
 }
+
+// MockSlice is a slice of Mock.
+type MockSlice []*Mock
+
+// Format returns column headers and values for the resource.
+func (r MockSlice) Format() ([]string, []interface{}) {
+	s := make([]interface{}, len(r))
+	for i, v := range r {
+		s[i] = v
+	}
+
+	return []string{"ID", "Name"}, s
+}

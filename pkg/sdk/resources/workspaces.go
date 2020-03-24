@@ -65,3 +65,16 @@ func (r Workspace) Format() ([]string, []interface{}) {
 
 	return []string{"ID", "Name", "Type"}, s
 }
+
+// WorkspaceSlice is a slice of Workspace.
+type WorkspaceSlice []*Workspace
+
+// Format returns column headers and values for the resource.
+func (r WorkspaceSlice) Format() ([]string, []interface{}) {
+	s := make([]interface{}, len(r))
+	for i, v := range r {
+		s[i] = v
+	}
+
+	return []string{"ID", "Name", "Type"}, s
+}

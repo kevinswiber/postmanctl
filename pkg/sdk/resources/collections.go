@@ -65,6 +65,19 @@ func (r Collection) Format() ([]string, []interface{}) {
 	return []string{"ID", "Name"}, s
 }
 
+// CollectionSlice is a slice of Collection.
+type CollectionSlice []*Collection
+
+// Format returns column headers and values for the resource.
+func (r CollectionSlice) Format() ([]string, []interface{}) {
+	s := make([]interface{}, len(r))
+	for i, v := range r {
+		s[i] = v.Info
+	}
+
+	return []string{"ID", "Name"}, s
+}
+
 // CollectionInfo contains metadata associated with a Collection.
 type CollectionInfo struct {
 	ID     string `json:"_postman_id"`

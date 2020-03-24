@@ -65,6 +65,19 @@ func (r Environment) Format() ([]string, []interface{}) {
 	return []string{"ID", "Name"}, s
 }
 
+// EnvironmentSlice is a slice of Environment.
+type EnvironmentSlice []*Environment
+
+// Format returns column headers and values for the resource.
+func (r EnvironmentSlice) Format() ([]string, []interface{}) {
+	s := make([]interface{}, len(r))
+	for i, v := range r {
+		s[i] = v
+	}
+
+	return []string{"ID", "Name"}, s
+}
+
 // KeyValuePair represents a key and value in the Postman API.
 type KeyValuePair struct {
 	Key     string `json:"key"`
