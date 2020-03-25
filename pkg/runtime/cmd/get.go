@@ -17,19 +17,13 @@ limitations under the License.
 package cmd
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 
-	"github.com/kevinswiber/postmanctl/pkg/sdk/client"
-	"github.com/kevinswiber/postmanctl/pkg/sdk/printers"
 	"github.com/kevinswiber/postmanctl/pkg/sdk/resources"
 	"github.com/spf13/cobra"
-	"k8s.io/client-go/util/jsonpath"
 )
 
 var outputFormat OutputFormatValue
@@ -126,13 +120,13 @@ func init() {
 	}
 
 	getCmd.AddCommand(
-		generateSubcommand(resources.CollectionType, "collections", []string{"collection", "co"}),
-		generateSubcommand(resources.EnvironmentType, "environments", []string{"environment", "env"}),
-		generateSubcommand(resources.MonitorType, "monitors", []string{"monitor", "mon"}),
-		generateSubcommand(resources.MockType, "mocks", []string{"mock"}),
-		generateSubcommand(resources.WorkspaceType, "workspaces", []string{"workspace", "ws"}),
+		generateGetSubcommand(resources.CollectionType, "collections", []string{"collection", "co"}),
+		generateGetSubcommand(resources.EnvironmentType, "environments", []string{"environment", "env"}),
+		generateGetSubcommand(resources.MonitorType, "monitors", []string{"monitor", "mon"}),
+		generateGetSubcommand(resources.MockType, "mocks", []string{"mock"}),
+		generateGetSubcommand(resources.WorkspaceType, "workspaces", []string{"workspace", "ws"}),
 		userCmd,
-		generateSubcommand(resources.APIType, "apis", []string{"api"}),
+		generateGetSubcommand(resources.APIType, "apis", []string{"api"}),
 		apiVersionsCmd,
 		apiRelationsCmd,
 		schemaCmd,
@@ -142,7 +136,7 @@ func init() {
 	rootCmd.AddCommand(getCmd)
 }
 
-func generateSubcommand(t resources.ResourceType, use string, aliases []string) *cobra.Command {
+func generateGetSubcommand(t resources.ResourceType, use string, aliases []string) *cobra.Command {
 	return &cobra.Command{
 		Use:     use,
 		Aliases: aliases,
@@ -155,6 +149,7 @@ func generateSubcommand(t resources.ResourceType, use string, aliases []string) 
 		},
 	}
 }
+
 func getAllResources(resourceType resources.ResourceType, args ...string) error {
 	ctx := context.Background()
 
@@ -184,7 +179,7 @@ func getAllResources(resourceType resources.ResourceType, args ...string) error 
 		return handleResponseError(err)
 	}
 
-	print(resource)
+	printGetOutput(resource)
 
 	return nil
 }
@@ -203,7 +198,7 @@ func getIndividualResources(resourceType resources.ResourceType, args ...string)
 			r[i] = resource
 		}
 
-		print(r)
+		printGetOutput(r)
 	case resources.EnvironmentType:
 		r := make(resources.EnvironmentSlice, len(args))
 		for i, id := range args {
@@ -216,7 +211,7 @@ func getIndividualResources(resourceType resources.ResourceType, args ...string)
 			r[i] = resource
 		}
 
-		print(r)
+		printGetOutput(r)
 	case resources.MockType:
 		r := make(resources.MockSlice, len(args))
 		for i, id := range args {
@@ -229,7 +224,7 @@ func getIndividualResources(resourceType resources.ResourceType, args ...string)
 			r[i] = resource
 		}
 
-		print(r)
+		printGetOutput(r)
 	case resources.MonitorType:
 		r := make(resources.MonitorSlice, len(args))
 		for i, id := range args {
@@ -242,7 +237,7 @@ func getIndividualResources(resourceType resources.ResourceType, args ...string)
 			r[i] = resource
 		}
 
-		print(r)
+		printGetOutput(r)
 	case resources.APIType:
 		r := make(resources.APISlice, len(args))
 		for i, id := range args {
@@ -255,7 +250,7 @@ func getIndividualResources(resourceType resources.ResourceType, args ...string)
 			r[i] = resource
 		}
 
-		print(r)
+		printGetOutput(r)
 	case resources.APIVersionType:
 		apiID := args[0]
 		ids := args[1:]
@@ -271,7 +266,7 @@ func getIndividualResources(resourceType resources.ResourceType, args ...string)
 			r[i] = resource
 		}
 
-		print(r)
+		printGetOutput(r)
 	case resources.WorkspaceType:
 		r := make(resources.WorkspaceSlice, len(args))
 		for i, id := range args {
@@ -284,7 +279,7 @@ func getIndividualResources(resourceType resources.ResourceType, args ...string)
 			r[i] = resource
 		}
 
-		print(r)
+		printGetOutput(r)
 	case resources.UserType:
 		resource, err := service.User(context.Background())
 
@@ -292,7 +287,7 @@ func getIndividualResources(resourceType resources.ResourceType, args ...string)
 			return handleResponseError(err)
 		}
 
-		print(resource)
+		printGetOutput(resource)
 	case resources.SchemaType:
 		apiID := args[0]
 		apiVersionID := args[1]
@@ -304,7 +299,7 @@ func getIndividualResources(resourceType resources.ResourceType, args ...string)
 			return handleResponseError(err)
 		}
 
-		print(resource)
+		printGetOutput(resource)
 	default:
 		return fmt.Errorf("invalid resource type: %s", resourceType.String())
 	}
@@ -319,7 +314,7 @@ func getAPIRelations(apiID, apiVersionID string) error {
 		return handleResponseError(err)
 	}
 
-	print(resource)
+	printGetOutput(resource)
 
 	return nil
 }
@@ -331,65 +326,7 @@ func getFormattedAPIRelations(apiID, apiVersionID string) error {
 		return handleResponseError(err)
 	}
 
-	print(resource)
+	printGetOutput(resource)
 
 	return nil
-}
-
-func handleResponseError(err error) error {
-	if err, ok := err.(*client.RequestError); ok {
-		fmt.Fprintln(os.Stderr, err.Error())
-		return nil
-	}
-
-	return err
-}
-
-func print(r interface{}) {
-	if r == nil {
-		return
-	}
-
-	if outputFormat.value == "json" {
-		t, err := json.MarshalIndent(&r, "", "  ")
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err)
-		}
-		fmt.Println(string(t))
-	} else if strings.HasPrefix(outputFormat.value, "jsonpath=") {
-		tmpl := outputFormat.value[9:]
-		j := jsonpath.New("out")
-		if err := j.Parse(tmpl); err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err)
-			os.Exit(1)
-		}
-
-		t, err := json.Marshal(&r)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err)
-			os.Exit(1)
-		}
-
-		var queryObj interface{}
-		queryObj = map[string]interface{}{}
-		if err := json.Unmarshal(t, &queryObj); err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err)
-			os.Exit(1)
-		}
-
-		buf := bytes.NewBuffer(nil)
-		j.Execute(buf, queryObj)
-
-		fmt.Println(buf)
-	} else {
-		var f resources.Formatter
-		f = r.(resources.Formatter)
-		printTable(f)
-	}
-}
-
-func printTable(f resources.Formatter) {
-	w := printers.GetNewTabWriter(os.Stdout)
-	printer := printers.NewTablePrinter(printers.PrintOptions{})
-	printer.PrintResource(f, w)
 }
