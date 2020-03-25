@@ -12,32 +12,32 @@ import (
 type Auth struct {
 
   // The attributes for API Key Authentication.
-  Apikey []*AuthAttribute `json:"apikey,omitempty"`
+  Apikey []*Auth `json:"apikey,omitempty"`
 
   // The attributes for [AWS Auth](http://docs.aws.amazon.com/AmazonS3/latest/dev/RESTAuthentication.html).
-  Awsv4 []*AuthAttribute `json:"awsv4,omitempty"`
+  Awsv4 []*Auth `json:"awsv4,omitempty"`
 
   // The attributes for [Basic Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication).
-  Basic []*AuthAttribute `json:"basic,omitempty"`
+  Basic []*Auth `json:"basic,omitempty"`
 
   // The helper attributes for [Bearer Token Authentication](https://tools.ietf.org/html/rfc6750)
-  Bearer []*AuthAttribute `json:"bearer,omitempty"`
+  Bearer []*Auth `json:"bearer,omitempty"`
 
   // The attributes for [Digest Authentication](https://en.wikipedia.org/wiki/Digest_access_authentication).
-  Digest []*AuthAttribute `json:"digest,omitempty"`
+  Digest []*Auth `json:"digest,omitempty"`
 
   // The attributes for [Hawk Authentication](https://github.com/hueniverse/hawk)
-  Hawk []*AuthAttribute `json:"hawk,omitempty"`
+  Hawk []*Auth `json:"hawk,omitempty"`
   Noauth interface{} `json:"noauth,omitempty"`
 
   // The attributes for [NTLM Authentication](https://msdn.microsoft.com/en-us/library/cc237488.aspx)
-  Ntlm []*AuthAttribute `json:"ntlm,omitempty"`
+  Ntlm []*Auth `json:"ntlm,omitempty"`
 
   // The attributes for [OAuth2](https://oauth.net/1/)
-  Oauth1 []*AuthAttribute `json:"oauth1,omitempty"`
+  Oauth1 []*Auth `json:"oauth1,omitempty"`
 
   // Helper attributes for [OAuth2](https://oauth.net/2/)
-  Oauth2 []*AuthAttribute `json:"oauth2,omitempty"`
+  Oauth2 []*Auth `json:"oauth2,omitempty"`
   Type string `json:"type"`
 }
 
@@ -72,6 +72,18 @@ type Certificate struct {
 
   // The passphrase for the certificate
   Passphrase string `json:"passphrase,omitempty"`
+}
+
+// Collection 
+type Collection struct {
+  Auth interface{} `json:"auth,omitempty"`
+  Event []*Event `json:"event,omitempty"`
+  Info *Info `json:"info"`
+
+  // Items are the basic unit for a Postman collection. You can think of them as corresponding to a single API endpoint. Each Item has one request and may have multiple API responses associated with it.
+  Item []interface{} `json:"item"`
+  ProtocolProfileBehavior *ProtocolProfileBehavior `json:"protocolProfileBehavior,omitempty"`
+  Variable []*Variable `json:"variable,omitempty"`
 }
 
 // Cookie A Cookie, that follows the [Google Chrome format](https://developer.chrome.com/extensions/cookies)
@@ -237,22 +249,6 @@ type Response struct {
 
   // Set of timing information related to request and response in milliseconds
   Timings interface{} `json:"timings,omitempty"`
-}
-
-// ResponseTimings_object Set of timing information related to request and response in milliseconds
-type ResponseTimings_object struct {
-}
-
-// Root 
-type Root struct {
-  Auth interface{} `json:"auth,omitempty"`
-  Event []*Event `json:"event,omitempty"`
-  Info *Info `json:"info"`
-
-  // Items are the basic unit for a Postman collection. You can think of them as corresponding to a single API endpoint. Each Item has one request and may have multiple API responses associated with it.
-  Item []interface{} `json:"item"`
-  ProtocolProfileBehavior *ProtocolProfileBehavior `json:"protocolProfileBehavior,omitempty"`
-  Variable []*Variable `json:"variable,omitempty"`
 }
 
 // Script A script is a snippet of Javascript code that can be used to to perform setup or teardown operations on a particular response.
@@ -562,6 +558,137 @@ func (strct *AuthAttribute) UnmarshalJSON(b []byte) error {
     // check if key (a required property) was received
     if !keyReceived {
         return errors.New("\"key\" is required but was not present")
+    }
+    return nil
+}
+
+func (strct *Collection) MarshalJSON() ([]byte, error) {
+	buf := bytes.NewBuffer(make([]byte, 0))
+	buf.WriteString("{")
+    comma := false
+    // Marshal the "auth" field
+    if comma { 
+        buf.WriteString(",") 
+    }
+    buf.WriteString("\"auth\": ")
+	if tmp, err := json.Marshal(strct.Auth); err != nil {
+		return nil, err
+ 	} else {
+ 		buf.Write(tmp)
+	}
+	comma = true
+    // Marshal the "event" field
+    if comma { 
+        buf.WriteString(",") 
+    }
+    buf.WriteString("\"event\": ")
+	if tmp, err := json.Marshal(strct.Event); err != nil {
+		return nil, err
+ 	} else {
+ 		buf.Write(tmp)
+	}
+	comma = true
+    // "Info" field is required
+    if strct.Info == nil {
+        return nil, errors.New("info is a required field")
+    }
+    // Marshal the "info" field
+    if comma { 
+        buf.WriteString(",") 
+    }
+    buf.WriteString("\"info\": ")
+	if tmp, err := json.Marshal(strct.Info); err != nil {
+		return nil, err
+ 	} else {
+ 		buf.Write(tmp)
+	}
+	comma = true
+    // "Item" field is required
+    // only required object types supported for marshal checking (for now)
+    // Marshal the "item" field
+    if comma { 
+        buf.WriteString(",") 
+    }
+    buf.WriteString("\"item\": ")
+	if tmp, err := json.Marshal(strct.Item); err != nil {
+		return nil, err
+ 	} else {
+ 		buf.Write(tmp)
+	}
+	comma = true
+    // Marshal the "protocolProfileBehavior" field
+    if comma { 
+        buf.WriteString(",") 
+    }
+    buf.WriteString("\"protocolProfileBehavior\": ")
+	if tmp, err := json.Marshal(strct.ProtocolProfileBehavior); err != nil {
+		return nil, err
+ 	} else {
+ 		buf.Write(tmp)
+	}
+	comma = true
+    // Marshal the "variable" field
+    if comma { 
+        buf.WriteString(",") 
+    }
+    buf.WriteString("\"variable\": ")
+	if tmp, err := json.Marshal(strct.Variable); err != nil {
+		return nil, err
+ 	} else {
+ 		buf.Write(tmp)
+	}
+	comma = true
+
+	buf.WriteString("}")
+	rv := buf.Bytes()
+	return rv, nil
+}
+
+func (strct *Collection) UnmarshalJSON(b []byte) error {
+    infoReceived := false
+    itemReceived := false
+    var jsonMap map[string]json.RawMessage
+    if err := json.Unmarshal(b, &jsonMap); err != nil {
+        return err
+    }
+    // parse all the defined properties
+    for k, v := range jsonMap {
+        switch k {
+        case "auth":
+            if err := json.Unmarshal([]byte(v), &strct.Auth); err != nil {
+                return err
+             }
+        case "event":
+            if err := json.Unmarshal([]byte(v), &strct.Event); err != nil {
+                return err
+             }
+        case "info":
+            if err := json.Unmarshal([]byte(v), &strct.Info); err != nil {
+                return err
+             }
+            infoReceived = true
+        case "item":
+            if err := json.Unmarshal([]byte(v), &strct.Item); err != nil {
+                return err
+             }
+            itemReceived = true
+        case "protocolProfileBehavior":
+            if err := json.Unmarshal([]byte(v), &strct.ProtocolProfileBehavior); err != nil {
+                return err
+             }
+        case "variable":
+            if err := json.Unmarshal([]byte(v), &strct.Variable); err != nil {
+                return err
+             }
+        }
+    }
+    // check if info (a required property) was received
+    if !infoReceived {
+        return errors.New("\"info\" is required but was not present")
+    }
+    // check if item (a required property) was received
+    if !itemReceived {
+        return errors.New("\"item\" is required but was not present")
     }
     return nil
 }
@@ -1353,137 +1480,6 @@ func (strct *ItemGroup) UnmarshalJSON(b []byte) error {
                 return err
              }
         }
-    }
-    // check if item (a required property) was received
-    if !itemReceived {
-        return errors.New("\"item\" is required but was not present")
-    }
-    return nil
-}
-
-func (strct *Root) MarshalJSON() ([]byte, error) {
-	buf := bytes.NewBuffer(make([]byte, 0))
-	buf.WriteString("{")
-    comma := false
-    // Marshal the "auth" field
-    if comma { 
-        buf.WriteString(",") 
-    }
-    buf.WriteString("\"auth\": ")
-	if tmp, err := json.Marshal(strct.Auth); err != nil {
-		return nil, err
- 	} else {
- 		buf.Write(tmp)
-	}
-	comma = true
-    // Marshal the "event" field
-    if comma { 
-        buf.WriteString(",") 
-    }
-    buf.WriteString("\"event\": ")
-	if tmp, err := json.Marshal(strct.Event); err != nil {
-		return nil, err
- 	} else {
- 		buf.Write(tmp)
-	}
-	comma = true
-    // "Info" field is required
-    if strct.Info == nil {
-        return nil, errors.New("info is a required field")
-    }
-    // Marshal the "info" field
-    if comma { 
-        buf.WriteString(",") 
-    }
-    buf.WriteString("\"info\": ")
-	if tmp, err := json.Marshal(strct.Info); err != nil {
-		return nil, err
- 	} else {
- 		buf.Write(tmp)
-	}
-	comma = true
-    // "Item" field is required
-    // only required object types supported for marshal checking (for now)
-    // Marshal the "item" field
-    if comma { 
-        buf.WriteString(",") 
-    }
-    buf.WriteString("\"item\": ")
-	if tmp, err := json.Marshal(strct.Item); err != nil {
-		return nil, err
- 	} else {
- 		buf.Write(tmp)
-	}
-	comma = true
-    // Marshal the "protocolProfileBehavior" field
-    if comma { 
-        buf.WriteString(",") 
-    }
-    buf.WriteString("\"protocolProfileBehavior\": ")
-	if tmp, err := json.Marshal(strct.ProtocolProfileBehavior); err != nil {
-		return nil, err
- 	} else {
- 		buf.Write(tmp)
-	}
-	comma = true
-    // Marshal the "variable" field
-    if comma { 
-        buf.WriteString(",") 
-    }
-    buf.WriteString("\"variable\": ")
-	if tmp, err := json.Marshal(strct.Variable); err != nil {
-		return nil, err
- 	} else {
- 		buf.Write(tmp)
-	}
-	comma = true
-
-	buf.WriteString("}")
-	rv := buf.Bytes()
-	return rv, nil
-}
-
-func (strct *Root) UnmarshalJSON(b []byte) error {
-    infoReceived := false
-    itemReceived := false
-    var jsonMap map[string]json.RawMessage
-    if err := json.Unmarshal(b, &jsonMap); err != nil {
-        return err
-    }
-    // parse all the defined properties
-    for k, v := range jsonMap {
-        switch k {
-        case "auth":
-            if err := json.Unmarshal([]byte(v), &strct.Auth); err != nil {
-                return err
-             }
-        case "event":
-            if err := json.Unmarshal([]byte(v), &strct.Event); err != nil {
-                return err
-             }
-        case "info":
-            if err := json.Unmarshal([]byte(v), &strct.Info); err != nil {
-                return err
-             }
-            infoReceived = true
-        case "item":
-            if err := json.Unmarshal([]byte(v), &strct.Item); err != nil {
-                return err
-             }
-            itemReceived = true
-        case "protocolProfileBehavior":
-            if err := json.Unmarshal([]byte(v), &strct.ProtocolProfileBehavior); err != nil {
-                return err
-             }
-        case "variable":
-            if err := json.Unmarshal([]byte(v), &strct.Variable); err != nil {
-                return err
-             }
-        }
-    }
-    // check if info (a required property) was received
-    if !infoReceived {
-        return errors.New("\"info\" is required but was not present")
     }
     // check if item (a required property) was received
     if !itemReceived {

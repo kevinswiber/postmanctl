@@ -49,14 +49,6 @@ type CollectionResponse struct {
 	Collection Collection `json:"collection"`
 }
 
-// Collection is a single item representation of the CollectionResponse.
-type Collection struct {
-	Info      CollectionInfo   `json:"info"`
-	Items     []CollectionItem `json:"item"`
-	Events    []Event          `json:"event,omitempty"`
-	Variables []Variable       `json:"variable,omitempty"`
-}
-
 // Format returns column headers and values for the resource.
 func (r Collection) Format() ([]string, []interface{}) {
 	s := make([]interface{}, 1)
@@ -77,49 +69,3 @@ func (r CollectionSlice) Format() ([]string, []interface{}) {
 
 	return []string{"ID", "Name"}, s
 }
-
-// CollectionInfo contains metadata associated with a Collection.
-type CollectionInfo struct {
-	ID     string `json:"_postman_id"`
-	Name   string `json:"name"`
-	Schema string `json:"schema"`
-}
-
-// CollectionItem is a single unit of a collection entity.
-type CollectionItem struct {
-	ID                      string           `json:"_postman_id"`
-	Name                    string           `json:"name"`
-	Items                   []CollectionItem `json:"item"`
-	Events                  []Event          `json:"event"`
-	ProtocolProfileBehavior struct{}         `json:"protocolProfileBehavior"`
-	Request                 Request          `json:"request"`
-	Responses               []Response       `json:"response"`
-}
-
-// Event represents a pre-request or test script.
-type Event struct {
-	Listen string `json:"listen"` /* prerequest, test */
-	Script Script `json:"script"`
-}
-
-// Variable is a representation of a Postman variable.
-type Variable struct {
-	ID    string `json:"id"`
-	Key   string `json:"key"`
-	Value string `json:"value"`
-	Type  string `json:"type"`
-}
-
-// Script is a representation of a pre-request or test script in the
-// Postman API.
-type Script struct {
-	ID   string   `json:"id"`
-	Type string   `json:"type"`
-	Exec []string `json:"exec"`
-}
-
-// Request contains HTTP request info associated with a CollectionItem.
-type Request struct{}
-
-// Response contains HTTP response info associated with a CollectionItem.
-type Response struct{}
