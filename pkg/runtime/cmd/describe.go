@@ -19,30 +19,20 @@ package cmd
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 	"text/tabwriter"
 
 	"github.com/kevinswiber/postmanctl/pkg/sdk/resources"
 	"github.com/spf13/cobra"
+	"github.com/xlab/treeprint"
 )
 
 // describeCmd represents the describe command
 var describeCmd = &cobra.Command{
 	Use:   "describe",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("describe called")
-	},
+	Short: "Describe an entity in the Postman API",
 }
 
 func init() {
@@ -198,123 +188,30 @@ func describeCollections(r resources.CollectionSlice) (string, error) {
 			out.Write([]byte(fmt.Sprintf("  ID:\t%s\n", c.Info.PostmanId)))
 			out.Write([]byte(fmt.Sprintf("  Name:\t%s\n", c.Info.Name)))
 			out.Write([]byte(fmt.Sprintf("  Schema:\t%s\n", c.Info.Schema)))
-			writeCollectionItemOrItemGroup(out, c.Item, "")
+			out.Write([]byte(fmt.Sprint("Items:\n")))
+			tree := treeprint.New()
+			writeCollectionItemOrItemGroup(out, c.Item, tree)
+			for _, s := range strings.Split(tree.String(), "\n") {
+				out.Write([]byte(fmt.Sprintf("  %s\n", s)))
+			}
 		}
 		return nil
 	})
 }
 
-func writeCollectionItemOrItemGroup(out io.Writer, c []interface{}, prefix string) {
-	if len(c) > 0 {
-		out.Write([]byte(fmt.Sprintf("%sItems:\n", prefix)))
-		for idx, v := range c {
-			var m map[string]interface{}
-			m = v.(map[string]interface{})
-			if _, ok := m["item"]; ok {
-				writeCollectionItemGroup(out, m, prefix, idx)
-				//writeCollectionItemOrItemGroup(out, m["item"].([]interface{}), prefix)
-			} else {
-				writeCollectionItem(out, m, prefix, idx)
-				//fmt.Println("it's an item")
-			}
-		}
-	}
-}
-
-func writeCollectionItemGroup(out io.Writer, c map[string]interface{}, prefix string, idx int) {
-	tmp, err := json.Marshal(c)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
-		os.Exit(1)
+func writeCollectionItemOrItemGroup(out io.Writer, c []interface{}, branch treeprint.Tree) {
+	if len(c) == 0 {
+		return
 	}
 
-	var ci resources.ItemGroup
-	if err := json.Unmarshal(tmp, &ci); err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
-		os.Exit(1)
-	}
-
-	level1Prefix := prefix + "  "
-	level2Prefix := level1Prefix + "  "
-	level3Prefix := level2Prefix + "  "
-	level4Prefix := level3Prefix + "  "
-	level5Prefix := level4Prefix + "  "
-	level6Prefix := level5Prefix + "  "
-
-	out.Write([]byte(fmt.Sprintf("%s%d:\n", level1Prefix, idx)))
-	out.Write([]byte(fmt.Sprintf("%sType:\tfolder\n", level2Prefix)))
-	out.Write([]byte(fmt.Sprintf("%sName:\t%s\n", level2Prefix, ci.Name)))
-	writeCollectionItemOrItemGroup(out, ci.Item, level2Prefix)
-
-	if len(ci.Event) > 0 {
-		out.Write([]byte(fmt.Sprintf("%sEvents:\n", level2Prefix)))
-	}
-
-	for idx, ev := range ci.Event {
-		out.Write([]byte(fmt.Sprintf("%s%d:\n", level3Prefix, idx)))
-		out.Write([]byte(fmt.Sprintf("%sListen:\t%s\n", level4Prefix, ev.Listen)))
-		out.Write([]byte(fmt.Sprintf("%sScript:\n", level4Prefix)))
-		out.Write([]byte(fmt.Sprintf("%sID:\t%s\n", level5Prefix, ev.Script.Id)))
-		out.Write([]byte(fmt.Sprintf("%sType:\t%s\n", level5Prefix, ev.Script.Type)))
-		out.Write([]byte(fmt.Sprintf("%sExec:\n", level5Prefix)))
-		if vSlice, ok := ev.Script.Exec.([]interface{}); ok {
-			var execSlice = make([]string, len(vSlice))
-			for i, s := range vSlice {
-				execSlice[i] = s.(string)
-			}
-
-			out.Write([]byte(fmt.Sprintf("%s\t%s\n", level6Prefix, strings.Join(execSlice, "\n\t"))))
-		} else if t, ok := ev.Script.Exec.(string); ok {
-			out.Write([]byte(fmt.Sprintf("%s\t%s\n", level6Prefix, t)))
-		}
-	}
-}
-
-func writeCollectionItem(out io.Writer, c map[string]interface{}, prefix string, idx int) {
-	tmp, err := json.Marshal(c)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
-		os.Exit(1)
-	}
-
-	var ci resources.Item
-	if err := json.Unmarshal(tmp, &ci); err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
-		os.Exit(1)
-	}
-
-	level1Prefix := prefix + "  "
-	level2Prefix := level1Prefix + "  "
-	level3Prefix := level2Prefix + "  "
-	level4Prefix := level3Prefix + "  "
-	level5Prefix := level4Prefix + "  "
-	level6Prefix := level5Prefix + "  "
-
-	out.Write([]byte(fmt.Sprintf("%s%d:\n", level1Prefix, idx)))
-	out.Write([]byte(fmt.Sprintf("%sID:\t%s\n", level2Prefix, c["_postman_id"])))
-	out.Write([]byte(fmt.Sprintf("%sType:\trequest\n", level2Prefix)))
-	out.Write([]byte(fmt.Sprintf("%sName:\t%s\n", level2Prefix, ci.Name)))
-
-	if len(ci.Event) > 0 {
-		out.Write([]byte(fmt.Sprintf("%sEvents:\n", level2Prefix)))
-	}
-
-	for idx, ev := range ci.Event {
-		out.Write([]byte(fmt.Sprintf("%s%d:\n", level3Prefix, idx)))
-		out.Write([]byte(fmt.Sprintf("%sListen:\t%s\n", level4Prefix, ev.Listen)))
-		out.Write([]byte(fmt.Sprintf("%sScript:\n", level4Prefix)))
-		out.Write([]byte(fmt.Sprintf("%sID:\t%s\n", level5Prefix, ev.Script.Id)))
-		out.Write([]byte(fmt.Sprintf("%sType:\t%s\n", level5Prefix, ev.Script.Type)))
-		out.Write([]byte(fmt.Sprintf("%sExec:\n", level5Prefix)))
-		if vSlice, ok := ev.Script.Exec.([]interface{}); ok {
-			var execSlice = make([]string, len(vSlice))
-			for i, s := range vSlice {
-				execSlice[i] = s.(string)
-			}
-
-			out.Write([]byte(fmt.Sprintf("%s\t%s\n", level6Prefix, strings.Join(execSlice, "\n\t"))))
-		} else if t, ok := ev.Script.Exec.(string); ok {
-			out.Write([]byte(fmt.Sprintf("%s\t%s\n", level6Prefix, t)))
+	for _, v := range c {
+		var m map[string]interface{}
+		m = v.(map[string]interface{})
+		if _, ok := m["item"]; ok {
+			b := branch.AddBranch(m["name"].(string) + " (folder)")
+			writeCollectionItemOrItemGroup(out, m["item"].([]interface{}), b)
+		} else {
+			branch.AddNode(m["name"].(string) + " (request)")
 		}
 	}
 }
