@@ -118,79 +118,21 @@ func init() {
 	apiRelationsCmd.Flags().StringVar(&forAPIVersion, "for-api-version", "", "the associated API Version ID (required)")
 	apiRelationsCmd.MarkFlagRequired("for-api-version")
 
+	userCmd := &cobra.Command{
+		Use: "user",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return getIndividualResources(resources.UserType)
+		},
+	}
+
 	getCmd.AddCommand(
-		&cobra.Command{
-			Use:     "collections",
-			Aliases: []string{"collection", "co"},
-			RunE: func(cmd *cobra.Command, args []string) error {
-				if len(args) > 0 {
-					return getIndividualResources(resources.CollectionType, args...)
-				}
-
-				return getAllResources(resources.CollectionType)
-			},
-		},
-		&cobra.Command{
-			Use:     "environments",
-			Aliases: []string{"environment", "env"},
-			RunE: func(cmd *cobra.Command, args []string) error {
-				if len(args) > 0 {
-					return getIndividualResources(resources.EnvironmentType, args...)
-				}
-
-				return getAllResources(resources.EnvironmentType)
-			},
-		},
-		&cobra.Command{
-			Use:     "monitors",
-			Aliases: []string{"monitor", "mon"},
-			RunE: func(cmd *cobra.Command, args []string) error {
-				if len(args) > 0 {
-					return getIndividualResources(resources.MonitorType, args...)
-				}
-
-				return getAllResources(resources.MonitorType)
-			},
-		},
-		&cobra.Command{
-			Use:     "mocks",
-			Aliases: []string{"mock"},
-			RunE: func(cmd *cobra.Command, args []string) error {
-				if len(args) > 0 {
-					return getIndividualResources(resources.MockType, args...)
-				}
-
-				return getAllResources(resources.MockType)
-			},
-		},
-		&cobra.Command{
-			Use:     "workspaces",
-			Aliases: []string{"workspace", "ws"},
-			RunE: func(cmd *cobra.Command, args []string) error {
-				if len(args) > 0 {
-					return getIndividualResources(resources.WorkspaceType, args...)
-				}
-
-				return getAllResources(resources.WorkspaceType)
-			},
-		},
-		&cobra.Command{
-			Use: "user",
-			RunE: func(cmd *cobra.Command, args []string) error {
-				return getIndividualResources(resources.UserType)
-			},
-		},
-		&cobra.Command{
-			Use:     "apis",
-			Aliases: []string{"api"},
-			RunE: func(cmd *cobra.Command, args []string) error {
-				if len(args) > 0 {
-					return getIndividualResources(resources.APIType, args...)
-				}
-
-				return getAllResources(resources.APIType)
-			},
-		},
+		generateSubcommand(resources.CollectionType, "collections", []string{"collection", "co"}),
+		generateSubcommand(resources.EnvironmentType, "environments", []string{"environment", "env"}),
+		generateSubcommand(resources.MonitorType, "monitors", []string{"monitor", "mon"}),
+		generateSubcommand(resources.MockType, "mocks", []string{"mock"}),
+		generateSubcommand(resources.WorkspaceType, "workspaces", []string{"workspace", "ws"}),
+		userCmd,
+		generateSubcommand(resources.APIType, "apis", []string{"api"}),
 		apiVersionsCmd,
 		apiRelationsCmd,
 		schemaCmd,
@@ -200,6 +142,19 @@ func init() {
 	rootCmd.AddCommand(getCmd)
 }
 
+func generateSubcommand(t resources.ResourceType, use string, aliases []string) *cobra.Command {
+	return &cobra.Command{
+		Use:     use,
+		Aliases: aliases,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) > 0 {
+				return getIndividualResources(t, args...)
+			}
+
+			return getAllResources(t)
+		},
+	}
+}
 func getAllResources(resourceType resources.ResourceType, args ...string) error {
 	ctx := context.Background()
 
