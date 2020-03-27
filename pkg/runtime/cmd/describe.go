@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"reflect"
 	"strings"
 	"text/tabwriter"
 
@@ -188,6 +189,25 @@ func describeCollections(r resources.CollectionSlice) (string, error) {
 			out.Write([]byte(fmt.Sprintf("  ID:\t%s\n", c.Info.PostmanId)))
 			out.Write([]byte(fmt.Sprintf("  Name:\t%s\n", c.Info.Name)))
 			out.Write([]byte(fmt.Sprintf("  Schema:\t%s\n", c.Info.Schema)))
+
+			var hasPreRequest, hasTest bool
+			for _, e := range c.Event {
+				if hasPreRequest && hasTest {
+					break
+				}
+
+				if !hasPreRequest && e.Listen == "prerequest" {
+					hasPreRequest = true
+				}
+
+				if !hasTest && e.Listen == "test" {
+					hasTest = true
+				}
+			}
+			out.Write([]byte("Scripts:\n"))
+			out.Write([]byte(fmt.Sprintf("  PreRequest:\t%t\n", hasPreRequest)))
+			out.Write([]byte(fmt.Sprintf("  Test:\t%t\n", hasTest)))
+
 			out.Write([]byte(fmt.Sprint("Items:\n")))
 			tree := treeprint.New()
 			writeCollectionItemOrItemGroup(out, c.Item, tree)
@@ -207,11 +227,37 @@ func writeCollectionItemOrItemGroup(out io.Writer, c []interface{}, branch treep
 	for _, v := range c {
 		var m map[string]interface{}
 		m = v.(map[string]interface{})
-		if _, ok := m["item"]; ok {
-			b := branch.AddBranch(m["name"].(string) + " (folder)")
-			writeCollectionItemOrItemGroup(out, m["item"].([]interface{}), b)
+		var evs []string
+
+		if t, ok := m["event"]; ok {
+			s := reflect.ValueOf(t)
+			if s.Kind() == reflect.Slice {
+				evs = make([]string, s.Len())
+				if events, ok := t.([]interface{}); ok {
+					for i, e := range events {
+						var ev map[string]interface{}
+						ev = e.(map[string]interface{})
+						if s, ok := ev["listen"].(string); ok {
+							evs[i] = s
+						}
+					}
+				}
+			}
+		}
+
+		if v, ok := m["item"]; ok {
+			metaString := ""
+			if len(evs) > 0 {
+				metaString += fmt.Sprintf(" (scripts: %s)", strings.Join(evs, ","))
+			}
+			b := branch.AddBranch(m["name"].(string) + metaString)
+			writeCollectionItemOrItemGroup(out, v.([]interface{}), b)
 		} else {
-			branch.AddNode(m["name"].(string) + " (request)")
+			metaString := ""
+			if len(evs) > 0 {
+				metaString += fmt.Sprintf(" (scripts: %s)", strings.Join(evs, ","))
+			}
+			branch.AddNode(m["name"].(string) + metaString)
 		}
 	}
 }
