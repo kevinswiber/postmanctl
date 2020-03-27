@@ -3,7 +3,6 @@ module github.com/kevinswiber/postmanctl
 go 1.14
 
 require (
-	github.com/a-h/generate v0.0.0-20190312091541-e59c34d33fb3 // indirect
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pelletier/go-toml v1.6.0 // indirect

@@ -60,7 +60,11 @@ func (p *TablePrinter) PrintResource(r resources.Formatter, output io.Writer) {
 	if !p.options.NoHeaders {
 		printCols := make([]string, len(cols))
 		for i, c := range cols {
-			printCols[i] = strings.ToUpper(c)
+			if c == "PostmanID" {
+				printCols[i] = "ID"
+			} else {
+				printCols[i] = strings.ToUpper(c)
+			}
 		}
 		fmt.Fprintln(w, strings.Join(printCols, "\t"))
 	}

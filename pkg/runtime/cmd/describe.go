@@ -186,7 +186,7 @@ func describeCollections(r resources.CollectionSlice) (string, error) {
 	return tabbedString(func(out io.Writer) error {
 		for _, c := range r {
 			out.Write([]byte("Info:\n"))
-			out.Write([]byte(fmt.Sprintf("  ID:\t%s\n", c.Info.PostmanId)))
+			out.Write([]byte(fmt.Sprintf("  ID:\t%s\n", c.Info.PostmanID)))
 			out.Write([]byte(fmt.Sprintf("  Name:\t%s\n", c.Info.Name)))
 			out.Write([]byte(fmt.Sprintf("  Schema:\t%s\n", c.Info.Schema)))
 
