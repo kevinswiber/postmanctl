@@ -38,7 +38,8 @@ func (c *Collection) UnmarshalJSON(b []byte) error {
 	}
 
 	c.Collection = &rawC
-	c.Items = newItemTree(c.Collection.Item)
+	c.Items = newItemTree()
+	populateItemBranch(c.Items.Root, c.Collection.Item)
 
 	return nil
 }
@@ -97,12 +98,35 @@ func (r CollectionSlice) Format() ([]string, []interface{}) {
 	return []string{"PostmanID", "Name"}, s
 }
 
-// ItemTree represents a folder/request structure in a Collection
-type ItemTree struct {
-	Root *itemBranch
+// Item represents an item (request) in a Collection.
+type Item struct {
+	*raw.Item
+	Events []Event
 }
 
-func (b *itemBranch) populate(item []interface{}) {
+// Event represents an item event.
+type Event struct {
+	*raw.Event
+}
+
+// UnmarshalJSON converts JSON to a struct.
+func (item *Item) UnmarshalJSON(b []byte) error {
+	var rawItem raw.Item
+	if err := json.Unmarshal(b, &rawItem); err != nil {
+		return err
+	}
+
+	item.Item = &rawItem
+	item.Events = make([]Event, len(item.Item.Event))
+
+	for i, rawEvent := range item.Item.Event {
+		item.Events[i] = Event{Event: rawEvent}
+	}
+
+	return nil
+}
+
+func populateItemBranch(b *itemBranch, item []interface{}) {
 	if len(item) == 0 {
 		return
 	}
@@ -112,22 +136,16 @@ func (b *itemBranch) populate(item []interface{}) {
 		m = v.(map[string]interface{})
 
 		if v2, ok := m["item"]; ok {
-			b.
-				addBranch(m["name"].(string)).
-				populate(v2.([]interface{}))
+			branch := b.addBranch(m["name"].(string))
+			populateItemBranch(branch, v2.([]interface{}))
 		} else {
-			b.addNode(m["name"].(string), m)
+			it := b.addNode()
+			populateItemNode(it, m["name"].(string), m)
 		}
 	}
 }
 
-func (b *itemBranch) addBranch(name string) *itemBranch {
-	return &itemBranch{
-		Name: name,
-	}
-}
-
-func (b *itemBranch) addNode(name string, item map[string]interface{}) error {
+func populateItemNode(n *Item, name string, item map[string]interface{}) error {
 	data, err := json.Marshal(item)
 	if err != nil {
 		return err
@@ -138,25 +156,7 @@ func (b *itemBranch) addNode(name string, item map[string]interface{}) error {
 		return err
 	}
 
-	b.Branch = nil
-	b.Item = &[]Item{Item{&it}}
+	n.Item = &it
 
 	return nil
-}
-
-func newItemTree(item []interface{}) *ItemTree {
-	tree := &ItemTree{Root: &itemBranch{}}
-	tree.Root.populate(item)
-	return tree
-}
-
-type itemBranch struct {
-	Name   string
-	Branch *[]itemBranch
-	Item   *[]Item
-}
-
-// Item represents an item (request) in a Collection.
-type Item struct {
-	*raw.Item
 }
