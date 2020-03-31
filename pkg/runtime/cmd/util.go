@@ -32,6 +32,7 @@ import (
 func handleResponseError(err error) error {
 	if err, ok := err.(*client.RequestError); ok {
 		fmt.Fprintln(os.Stderr, err.Error())
+		os.Exit(1)
 		return nil
 	}
 

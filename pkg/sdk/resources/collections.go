@@ -38,8 +38,8 @@ func (c *Collection) UnmarshalJSON(b []byte) error {
 	}
 
 	c.Collection = &rawC
-	c.Items = newItemTree()
-	populateItemBranch(c.Items.Root, c.Collection.Item)
+	c.Items = NewItemTree()
+	populateItemGroup(c.Items.Root, c.Collection.Item)
 
 	return nil
 }
@@ -104,6 +104,12 @@ type Item struct {
 	Events []Event
 }
 
+// ItemGroup represents a folder in a Collection.
+type ItemGroup struct {
+	*raw.ItemGroup
+	Events []Event
+}
+
 // Event represents an item event.
 type Event struct {
 	*raw.Event
@@ -126,9 +132,9 @@ func (item *Item) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-func populateItemBranch(b *itemBranch, item []interface{}) {
+func populateItemGroup(b *ItemTreeNode, item []interface{}) error {
 	if len(item) == 0 {
-		return
+		return nil
 	}
 
 	for _, v := range item {
@@ -136,16 +142,33 @@ func populateItemBranch(b *itemBranch, item []interface{}) {
 		m = v.(map[string]interface{})
 
 		if v2, ok := m["item"]; ok {
-			branch := b.addBranch(m["name"].(string))
-			populateItemBranch(branch, v2.([]interface{}))
-		} else {
-			it := b.addNode()
-			populateItemNode(it, m["name"].(string), m)
+			branch := b.AddItemGroup()
+
+			data, err := json.Marshal(m)
+			if err != nil {
+				return err
+			}
+
+			var ig raw.ItemGroup
+			if err := json.Unmarshal(data, &ig); err != nil {
+				return err
+			}
+
+			b.ItemGroup = &ItemGroup{
+				ItemGroup: &ig,
+			}
+
+			return populateItemGroup(branch, v2.([]interface{}))
 		}
+
+		it := b.AddItem()
+		return populateItem(it, m["name"].(string), m)
 	}
+
+	return nil
 }
 
-func populateItemNode(n *Item, name string, item map[string]interface{}) error {
+func populateItem(n *Item, name string, item map[string]interface{}) error {
 	data, err := json.Marshal(item)
 	if err != nil {
 		return err

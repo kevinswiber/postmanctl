@@ -18,46 +18,49 @@ package resources
 
 // ItemTree represents a folder/request structure in a Collection
 type ItemTree struct {
-	Root *itemBranch
+	Root *ItemTreeNode
 }
 
-func (b *itemBranch) addBranch(name string) *itemBranch {
-	br := itemBranch{
-		Name: name,
-	}
+// AddItemGroup adds an item group to a tree.
+func (b *ItemTreeNode) AddItemGroup() *ItemTreeNode {
+	br := ItemTreeNode{}
 
-	branch := append(*b.Branch, &br)
+	branch := append(*b.Branches, &br)
 
-	b.Branch = &branch
-	b.Item = nil
+	b.Branches = &branch
 
-	return (*b.Branch)[len(*b.Branch)-1]
+	return (*b.Branches)[len(*b.Branches)-1]
 }
 
-func (b *itemBranch) addNode() *Item {
+// AddItem adds a single item to a tree node.
+func (b *ItemTreeNode) AddItem() *Item {
 	item := Item{}
 
-	if b.Item == nil {
-		b.Item = &[]*Item{&item}
+	if b.Items == nil {
+		b.Items = &[]*Item{&item}
 	}
 
-	items := append(*b.Item, &item)
+	items := append(*b.Items, &item)
 
-	b.Item = &items
-	b.Branch = nil
+	b.Items = &items
+	b.Branches = nil
 
-	return (*b.Item)[len(*b.Item)-1]
+	return (*b.Items)[len(*b.Items)-1]
 }
 
-func newItemTree() *ItemTree {
+// NewItemTree creates a new tree for storing items.
+func NewItemTree() *ItemTree {
 	tree := &ItemTree{
-		Root: &itemBranch{},
+		Root: &ItemTreeNode{
+			ItemGroup: nil,
+		},
 	}
 	return tree
 }
 
-type itemBranch struct {
-	Name   string
-	Branch *[]*itemBranch
-	Item   *[]*Item
+// ItemTreeNode represents a group of items or a single item in a tree.
+type ItemTreeNode struct {
+	*ItemGroup
+	Branches *[]*ItemTreeNode
+	Items    *[]*Item
 }
