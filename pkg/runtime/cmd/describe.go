@@ -207,6 +207,13 @@ func describeCollections(r resources.CollectionSlice) (string, error) {
 			out.Write([]byte(fmt.Sprintf("  PreRequest:\t%t\n", hasPreRequest)))
 			out.Write([]byte(fmt.Sprintf("  Test:\t%t\n", hasTest)))
 
+			var variables []string = make([]string, len(c.Variable))
+			for i, v := range c.Variable {
+				variables[i] = v.Key
+			}
+
+			out.Write([]byte(fmt.Sprintf("Variables:\t%s\n", strings.Join(variables, ", "))))
+
 			out.Write([]byte(fmt.Sprint("Items:\n")))
 			tree := treeprint.New()
 			writeCollectionItemOrItemGroup(out, c.Items.Root, tree)
@@ -258,73 +265,6 @@ func writeCollectionItemOrItemGroup(out io.Writer, c resources.ItemTreeNode, pri
 			printBranch.AddNode(it.Name + metaString)
 		}
 	}
-
-	/*
-		if c.Items != nil {
-			if len(*c.Items) > 0 {
-				for _, it := range *c.Items {
-					var evs []string
-					for _, e := range (*it).Events {
-						evs = append(evs, e.Listen)
-					}
-					metaString := ""
-					if len(evs) > 0 {
-						metaString += fmt.Sprintf(" (scripts: %s)", strings.Join(evs, ","))
-					}
-					fmt.Printf("item: %+v\n", it)
-					printBranch.AddNode(it.Name + metaString)
-				}
-			}
-		}*/
-	/*
-		metaString := ""
-		if len(evs) > 0 {
-			metaString += fmt.Sprintf(" (scripts: %s)", strings.Join(evs, ","))
-		}
-		branch.AddNode(m["name"].(string) + metaString)
-	*/
-	/*
-		if len(c) == 0 {
-			return
-		}
-
-		for _, v := range c {
-			var m map[string]interface{}
-			m = v.(map[string]interface{})
-			var evs []string
-
-			if t, ok := m["event"]; ok {
-				s := reflect.ValueOf(t)
-				if s.Kind() == reflect.Slice {
-					evs = make([]string, s.Len())
-					if events, ok := t.([]interface{}); ok {
-						for i, e := range events {
-							var ev map[string]interface{}
-							ev = e.(map[string]interface{})
-							if s, ok := ev["listen"].(string); ok {
-								evs[i] = s
-							}
-						}
-					}
-				}
-			}
-
-			if v, ok := m["item"]; ok {
-				metaString := ""
-				if len(evs) > 0 {
-					metaString += fmt.Sprintf(" (scripts: %s)", strings.Join(evs, ","))
-				}
-				b := branch.AddBranch(m["name"].(string) + metaString)
-				writeCollectionItemOrItemGroup(out, v.([]interface{}), b)
-			} else {
-				metaString := ""
-				if len(evs) > 0 {
-					metaString += fmt.Sprintf(" (scripts: %s)", strings.Join(evs, ","))
-				}
-				branch.AddNode(m["name"].(string) + metaString)
-			}
-		}
-	*/
 }
 
 func tabbedString(f func(io.Writer) error) (string, error) {
