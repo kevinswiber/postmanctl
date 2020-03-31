@@ -184,10 +184,11 @@ func describeResource(resourceType resources.ResourceType, args ...string) error
 func describeCollections(r resources.CollectionSlice) (string, error) {
 	return tabbedString(func(out io.Writer) error {
 		for _, c := range r {
-			out.Write([]byte("Info:\n"))
-			out.Write([]byte(fmt.Sprintf("  ID:\t%s\n", c.Info.PostmanID)))
-			out.Write([]byte(fmt.Sprintf("  Name:\t%s\n", c.Info.Name)))
-			out.Write([]byte(fmt.Sprintf("  Schema:\t%s\n", c.Info.Schema)))
+			buf := new(bytes.Buffer)
+			buf.WriteString("Info:\n")
+			buf.WriteString(fmt.Sprintf("  ID:\t%s\n", c.Info.PostmanID))
+			buf.WriteString(fmt.Sprintf("  Name:\t%s\n", c.Info.Name))
+			buf.WriteString(fmt.Sprintf("  Schema:\t%s\n", c.Info.Schema))
 
 			var hasPreRequest, hasTest bool
 			for _, e := range c.Event {
@@ -203,23 +204,24 @@ func describeCollections(r resources.CollectionSlice) (string, error) {
 					hasTest = true
 				}
 			}
-			out.Write([]byte("Scripts:\n"))
-			out.Write([]byte(fmt.Sprintf("  PreRequest:\t%t\n", hasPreRequest)))
-			out.Write([]byte(fmt.Sprintf("  Test:\t%t\n", hasTest)))
+			buf.WriteString("Scripts:\n")
+			buf.WriteString(fmt.Sprintf("  PreRequest:\t%t\n", hasPreRequest))
+			buf.WriteString(fmt.Sprintf("  Test:\t%t\n", hasTest))
 
 			var variables []string = make([]string, len(c.Variable))
 			for i, v := range c.Variable {
 				variables[i] = v.Key
 			}
 
-			out.Write([]byte(fmt.Sprintf("Variables:\t%s\n", strings.Join(variables, ", "))))
+			buf.WriteString(fmt.Sprintf("Variables:\t%s\n", strings.Join(variables, ", ")))
 
-			out.Write([]byte(fmt.Sprint("Items:\n")))
+			buf.WriteString(fmt.Sprint("Items:\n"))
 			tree := treeprint.New()
 			writeCollectionItemOrItemGroup(out, c.Items.Root, tree)
 			for _, s := range strings.Split(tree.String(), "\n") {
-				out.Write([]byte(fmt.Sprintf("  %s\n", s)))
+				buf.WriteString(fmt.Sprintf("  %s\n", s))
 			}
+			buf.WriteTo(out)
 		}
 		return nil
 	})
