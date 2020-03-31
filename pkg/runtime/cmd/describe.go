@@ -218,35 +218,64 @@ func describeCollections(r resources.CollectionSlice) (string, error) {
 	})
 }
 
-func writeCollectionItemOrItemGroup(out io.Writer, c *resources.ItemTreeNode, branch treeprint.Tree) {
-	if c.Items != nil {
-		if len(*c.Items) > 0 {
-			for _, it := range *c.Items {
-				var evs []string
-				for _, e := range it.Events {
-					evs = append(evs, e.Listen)
-				}
+func writeCollectionItemOrItemGroup(out io.Writer, c resources.ItemTreeNode, printBranch treeprint.Tree) {
+	if c.ItemGroup != nil {
+		var evs []string
+		if c.ItemGroup.Events != nil {
+			for _, e := range c.ItemGroup.Events {
+				evs = append(evs, e.Listen)
 			}
 		}
-	}
 
-	var evs []string
-	if c.Events != nil {
-		for _, e := range c.Events {
-			evs = append(evs, e.Listen)
-		}
-	}
-
-	if c.ItemGroup != nil {
 		metaString := ""
 		if len(evs) > 0 {
 			metaString += fmt.Sprintf(" (scripts: %s)", strings.Join(evs, ","))
 		}
-		b := branch.AddBranch(c.Name + metaString)
-		for _, br := range *c.Branches {
-			writeCollectionItemOrItemGroup(out, br, b)
+		printBranch = printBranch.AddBranch(c.ItemGroup.Name + metaString)
+	}
+
+	if c.Branches != nil {
+		if c.Branches != nil {
+			for _, br := range *c.Branches {
+				writeCollectionItemOrItemGroup(out, br, printBranch)
+			}
 		}
 	}
+
+	if c.Items != nil {
+		for _, it := range *c.Items {
+			var evs []string
+			if it.Events != nil {
+				for _, e := range it.Events {
+					evs = append(evs, e.Listen)
+				}
+			}
+
+			metaString := ""
+			if len(evs) > 0 {
+				metaString += fmt.Sprintf(" (scripts: %s)", strings.Join(evs, ","))
+			}
+			printBranch.AddNode(it.Name + metaString)
+		}
+	}
+
+	/*
+		if c.Items != nil {
+			if len(*c.Items) > 0 {
+				for _, it := range *c.Items {
+					var evs []string
+					for _, e := range (*it).Events {
+						evs = append(evs, e.Listen)
+					}
+					metaString := ""
+					if len(evs) > 0 {
+						metaString += fmt.Sprintf(" (scripts: %s)", strings.Join(evs, ","))
+					}
+					fmt.Printf("item: %+v\n", it)
+					printBranch.AddNode(it.Name + metaString)
+				}
+			}
+		}*/
 	/*
 		metaString := ""
 		if len(evs) > 0 {
