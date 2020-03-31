@@ -82,10 +82,21 @@ func init() {
 	apiVersionsCmd.MarkFlagRequired("for-api")
 
 	schemaCmd := &cobra.Command{
-		Use:  "schema",
-		Args: cobra.MinimumNArgs(1),
+		Use: "schema",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			params := append([]string{forAPI, forAPIVersion}, args...)
+			params := []string{forAPI, forAPIVersion}
+			if len(args) == 0 {
+				version, err := service.APIVersion(context.Background(), forAPI, forAPIVersion)
+
+				if err != nil {
+					return handleResponseError(err)
+				}
+
+				if len(version.Schema) > 0 {
+					params = append(params, version.Schema[0])
+				}
+			}
+			params = append(params, args...)
 			return getIndividualResources(resources.SchemaType, params...)
 		},
 	}
