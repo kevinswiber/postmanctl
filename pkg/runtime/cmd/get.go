@@ -59,11 +59,6 @@ var getCmd = &cobra.Command{
 	Short: "Retrieve Postman resources.",
 }
 
-var (
-	forAPI        string
-	forAPIVersion string
-)
-
 func init() {
 	apiVersionsCmd := &cobra.Command{
 		Use:     "api-versions",

@@ -16,6 +16,8 @@ limitations under the License.
 
 package resources
 
+import "time"
+
 // APIListResponse represents the top-level APIs response from the Postman API.
 type APIListResponse struct {
 	APIs APIListItems `json:"apis"`
@@ -36,15 +38,15 @@ func (r APIListItems) Format() ([]string, []interface{}) {
 
 // APIListItem represents a single item in an APIListResponse.
 type APIListItem struct {
-	CreatedBy   string `json:"createdBy"`
-	UpdatedBy   string `json:"updatedBy"`
-	Team        string `json:"team"`
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Summary     string `json:"summary"`
-	Description string `json:"description"`
-	CreatedAt   string `json:"createdAt"`
-	UpdatedAt   string `json:"updatedAt"`
+	CreatedBy   string    `json:"createdBy"`
+	UpdatedBy   string    `json:"updatedBy"`
+	Team        string    `json:"team"`
+	ID          string    `json:"id"`
+	Name        string    `json:"name"`
+	Summary     string    `json:"summary"`
+	Description string    `json:"description"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
 // APIResponse is a single API representation in the Postman API.
@@ -54,15 +56,15 @@ type APIResponse struct {
 
 // API represents a single item in an APIListResponse.
 type API struct {
-	CreatedBy   string `json:"createdBy"`
-	UpdatedBy   string `json:"updatedBy"`
-	Team        string `json:"team"`
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Summary     string `json:"summary"`
-	Description string `json:"description"`
-	CreatedAt   string `json:"createdAt"`
-	UpdatedAt   string `json:"updatedAt"`
+	CreatedBy   string    `json:"createdBy"`
+	UpdatedBy   string    `json:"updatedBy"`
+	Team        string    `json:"team"`
+	ID          string    `json:"id"`
+	Name        string    `json:"name"`
+	Summary     string    `json:"summary"`
+	Description string    `json:"description"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
 // Format returns column headers and values for the resource.

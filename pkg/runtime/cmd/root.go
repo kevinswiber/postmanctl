@@ -38,6 +38,8 @@ var (
 	configContext config.Context
 	options       *client.Options
 	service       *sdk.Service
+	forAPI        string
+	forAPIVersion string
 )
 
 var rootCmd = &cobra.Command{

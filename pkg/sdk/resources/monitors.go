@@ -142,10 +142,10 @@ func (r MonitorSlice) Format() ([]string, []interface{}) {
 
 // MonitorOptions list options for a monitor.
 type MonitorOptions struct {
-	StrictSSL       bool        `json:"strictSSL"`
-	FollowRedirects bool        `json:"followRedirects"`
-	RequestTimeout  interface{} `json:"requestTimeout"`
-	RequestDelay    int         `json:"requestDelay"`
+	StrictSSL       bool `json:"strictSSL"`
+	FollowRedirects bool `json:"followRedirects"`
+	RequestTimeout  *int `json:"requestTimeout"`
+	RequestDelay    int  `json:"requestDelay"`
 }
 
 // OnError represents a communication mechanism for errors.

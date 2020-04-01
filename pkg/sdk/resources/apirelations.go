@@ -47,6 +47,15 @@ func NewFormattedAPIRelationItems(r *APIRelations) FormattedAPIRelationItems {
 		i++
 	}
 
+	for _, s := range r.Environment {
+		ret[i] = FormattedAPIRelationItem{
+			ID:   s.ID,
+			Name: s.Name,
+			Type: "environment",
+		}
+		i++
+	}
+
 	for _, s := range r.ContractTest {
 		ret[i] = FormattedAPIRelationItem{
 			ID:   s.ID,
@@ -112,16 +121,25 @@ type APIRelationsResource struct {
 
 // APIRelations provides the top-level relations representation for APIs.
 type APIRelations struct {
-	Documentation   map[string]LinkedCollection `json:"documentation,omitempty"`
-	ContractTest    map[string]LinkedCollection `json:"contracttest,omitempty"`
-	TestSuite       map[string]LinkedCollection `json:"testsuite,omitempty"`
-	IntegrationTest map[string]LinkedCollection `json:"integrationtest,omitempty"`
-	Mock            map[string]LinkedMock       `json:"mock,omitempty"`
-	Monitor         map[string]LinkedMonitor    `json:"monitor,omitempty"`
+	Documentation   map[string]LinkedCollection  `json:"documentation,omitempty"`
+	Environment     map[string]LinkedEnvironment `json:"environment,omitempty"`
+	ContractTest    map[string]LinkedCollection  `json:"contracttest,omitempty"`
+	TestSuite       map[string]LinkedCollection  `json:"testsuite,omitempty"`
+	IntegrationTest map[string]LinkedCollection  `json:"integrationtest,omitempty"`
+	Mock            map[string]LinkedMock        `json:"mock,omitempty"`
+	Monitor         map[string]LinkedMonitor     `json:"monitor,omitempty"`
 }
 
 // LinkedCollection describes a single linked collection representation.
 type LinkedCollection struct {
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+// LinkedEnvironment describes a single linked collection representation.
+type LinkedEnvironment struct {
 	ID        string    `json:"id"`
 	Name      string    `json:"name"`
 	CreatedAt time.Time `json:"createdAt"`
