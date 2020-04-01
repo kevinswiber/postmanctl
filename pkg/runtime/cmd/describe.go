@@ -29,12 +29,12 @@ import (
 	"github.com/xlab/treeprint"
 )
 
-var describeCmd = &cobra.Command{
-	Use:   "describe",
-	Short: "Describe an entity in the Postman API",
-}
-
 func init() {
+	describeCmd := &cobra.Command{
+		Use:   "describe",
+		Short: "Describe an entity in the Postman API",
+	}
+
 	userCmd := &cobra.Command{
 		Use: "user",
 		RunE: func(cmd *cobra.Command, args []string) error {
