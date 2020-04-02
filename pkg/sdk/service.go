@@ -93,6 +93,17 @@ func (s *Service) CreateMockFromReader(ctx context.Context, reader io.Reader, wo
 	return s.CreateFromReader(ctx, resources.MockType, reader, params)
 }
 
+// CreateMonitorFromReader creates a new mock.
+func (s *Service) CreateMonitorFromReader(ctx context.Context, reader io.Reader, workspace string) (string, error) {
+	var params map[string]string
+	if workspace != "" {
+		params = make(map[string]string)
+		params["workspace"] = workspace
+	}
+
+	return s.CreateFromReader(ctx, resources.MonitorType, reader, params)
+}
+
 // CreateFromReader posts a new resource to the Postman API.
 func (s *Service) CreateFromReader(ctx context.Context, t resources.ResourceType, reader io.Reader, params map[string]string) (string, error) {
 	b, err := ioutil.ReadAll(reader)
@@ -141,6 +152,16 @@ func (s *Service) CreateFromReader(ctx context.Context, t resources.ResourceType
 			Mock map[string]interface{} `json:"mock"`
 		}{
 			Mock: v,
+		}
+		requestBody, err = json.Marshal(c)
+	case resources.MonitorType:
+		path = []string{"monitors"}
+		responseValueKey = "monitor"
+
+		c := struct {
+			Monitor map[string]interface{} `json:"monitor"`
+		}{
+			Monitor: v,
 		}
 		requestBody, err = json.Marshal(c)
 	}

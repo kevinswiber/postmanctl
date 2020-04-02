@@ -28,6 +28,7 @@ import (
 	"github.com/kevinswiber/postmanctl/pkg/sdk"
 	"github.com/kevinswiber/postmanctl/pkg/sdk/client"
 	"github.com/spf13/cobra"
+	"github.com/spf13/cobra/doc"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
@@ -58,6 +59,11 @@ func Execute() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+}
+
+// GenMarkdownTree generates Markdown documentation for postmanctl.
+func GenMarkdownTree(path string) error {
+	return doc.GenMarkdownTree(rootCmd, path)
 }
 
 func init() {
