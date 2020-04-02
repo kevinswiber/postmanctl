@@ -59,6 +59,7 @@ type Request struct {
 	requestReader io.Reader
 	result        interface{}
 	headers       http.Header
+	params        url.Values
 	err           error
 }
 
@@ -86,6 +87,17 @@ func NewRequestWithContext(ctx context.Context, c *Options) *Request {
 // AddHeader adds a header to the request.
 func (r *Request) AddHeader(key string, value string) *Request {
 	r.headers.Add(key, value)
+	return r
+}
+
+// Param sets a query parameter.
+func (r *Request) Param(k, v string) *Request {
+	if r.params == nil {
+		r.params = make(url.Values)
+	}
+
+	r.params.Add(k, v)
+
 	return r
 }
 

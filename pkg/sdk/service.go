@@ -61,12 +61,29 @@ func (s *Service) Collection(ctx context.Context, id string) (*resources.Collect
 }
 
 // CreateCollectionFromReader creates a new collection.
-func (s *Service) CreateCollectionFromReader(ctx context.Context, reader io.Reader) (string, error) {
-	return s.CreateFromReader(ctx, resources.CollectionType, reader)
+func (s *Service) CreateCollectionFromReader(ctx context.Context, reader io.Reader, workspace string) (string, error) {
+	var params map[string]string
+	if workspace != "" {
+		params = make(map[string]string)
+		params["workspace"] = workspace
+	}
+
+	return s.CreateFromReader(ctx, resources.CollectionType, reader, params)
+}
+
+// CreateEnvironmentFromReader creates a new environment.
+func (s *Service) CreateEnvironmentFromReader(ctx context.Context, reader io.Reader, workspace string) (string, error) {
+	var params map[string]string
+	if workspace != "" {
+		params = make(map[string]string)
+		params["workspace"] = workspace
+	}
+
+	return s.CreateFromReader(ctx, resources.EnvironmentType, reader, params)
 }
 
 // CreateFromReader posts a new resource to the Postman API.
-func (s *Service) CreateFromReader(ctx context.Context, t resources.ResourceType, reader io.Reader) (string, error) {
+func (s *Service) CreateFromReader(ctx context.Context, t resources.ResourceType, reader io.Reader, params map[string]string) (string, error) {
 	b, err := ioutil.ReadAll(reader)
 
 	if err != nil {
@@ -93,6 +110,16 @@ func (s *Service) CreateFromReader(ctx context.Context, t resources.ResourceType
 			Collection map[string]interface{} `json:"collection"`
 		}{
 			Collection: v,
+		}
+		requestBody, err = json.Marshal(c)
+	case resources.EnvironmentType:
+		path = []string{"environments"}
+		responseValueKey = "environment"
+
+		c := struct {
+			Environment map[string]interface{} `json:"environment"`
+		}{
+			Environment: v,
 		}
 		requestBody, err = json.Marshal(c)
 	}

@@ -18,6 +18,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -33,14 +34,16 @@ import (
 )
 
 var (
-	cfgFile       string
-	cfg           *config.Config
-	configContext config.Context
-	options       *client.Options
-	service       *sdk.Service
-	forAPI        string
-	forAPIVersion string
-	inputFile     string
+	cfgFile        string
+	cfg            *config.Config
+	configContext  config.Context
+	options        *client.Options
+	service        *sdk.Service
+	forAPI         string
+	forAPIVersion  string
+	inputFile      string
+	inputReader    io.Reader
+	usingWorkspace string
 )
 
 var rootCmd = &cobra.Command{

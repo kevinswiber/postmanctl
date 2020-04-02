@@ -18,6 +18,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
@@ -29,41 +30,70 @@ func init() {
 	createCmd := &cobra.Command{
 		Use:   "create",
 		Short: "Create Postman resources.",
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			stat, _ := os.Stdin.Stat()
+			if (stat.Mode() & os.ModeCharDevice) == 0 {
+				inputReader = os.Stdin
+			} else {
+				if inputFile == "" {
+					return errors.New("flag \"filename\" not set, use \"--filename\" or stdin")
+				}
+			}
+
+			return nil
+		},
 	}
-	createCmd.PersistentFlags().StringVarP(&inputFile, "filename", "f", "", "the filename used to create the resource (required)")
-	createCmd.MarkPersistentFlagRequired("filename")
+	createCmd.PersistentFlags().StringVarP(&inputFile, "filename", "f", "", "the filename used to create the resource (required when not using data from stdin)")
 
 	createCmd.AddCommand(
 		generateCreateSubcommand(resources.CollectionType, "collection", []string{"co"}),
+		generateCreateSubcommand(resources.EnvironmentType, "environment", []string{"env"}),
 	)
 
 	rootCmd.AddCommand(createCmd)
 }
 
 func generateCreateSubcommand(t resources.ResourceType, use string, aliases []string) *cobra.Command {
-	return &cobra.Command{
+	cmd := cobra.Command{
 		Use:     use,
 		Aliases: aliases,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return createResource(t)
 		},
 	}
+
+	cmd.Flags().StringVarP(&usingWorkspace, "workspace", "w", "", "workspace for create operation")
+
+	return &cmd
 }
 
 func createResource(t resources.ResourceType) error {
-	r, err := os.Open(inputFile)
-	defer r.Close()
+	if inputReader == nil {
+		r, err := os.Open(inputFile)
+		defer r.Close()
 
-	if err != nil {
-		return err
-	}
-
-	id := ""
-	switch t {
-	case resources.CollectionType:
-		if id, err = service.CreateCollectionFromReader(context.Background(), r); err != nil {
+		if err != nil {
 			return err
 		}
+
+		inputReader = r
+	}
+
+	var (
+		id  string
+		err error
+	)
+
+	switch t {
+	case resources.CollectionType:
+		id, err = service.CreateCollectionFromReader(context.Background(), inputReader, usingWorkspace)
+	case resources.EnvironmentType:
+		id, err = service.CreateEnvironmentFromReader(context.Background(), inputReader, usingWorkspace)
+	}
+
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
 
 	fmt.Println(id)
