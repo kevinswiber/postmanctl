@@ -82,6 +82,17 @@ func (s *Service) CreateEnvironmentFromReader(ctx context.Context, reader io.Rea
 	return s.CreateFromReader(ctx, resources.EnvironmentType, reader, params)
 }
 
+// CreateMockFromReader creates a new mock.
+func (s *Service) CreateMockFromReader(ctx context.Context, reader io.Reader, workspace string) (string, error) {
+	var params map[string]string
+	if workspace != "" {
+		params = make(map[string]string)
+		params["workspace"] = workspace
+	}
+
+	return s.CreateFromReader(ctx, resources.MockType, reader, params)
+}
+
 // CreateFromReader posts a new resource to the Postman API.
 func (s *Service) CreateFromReader(ctx context.Context, t resources.ResourceType, reader io.Reader, params map[string]string) (string, error) {
 	b, err := ioutil.ReadAll(reader)
@@ -120,6 +131,16 @@ func (s *Service) CreateFromReader(ctx context.Context, t resources.ResourceType
 			Environment map[string]interface{} `json:"environment"`
 		}{
 			Environment: v,
+		}
+		requestBody, err = json.Marshal(c)
+	case resources.MockType:
+		path = []string{"mocks"}
+		responseValueKey = "mock"
+
+		c := struct {
+			Mock map[string]interface{} `json:"mock"`
+		}{
+			Mock: v,
 		}
 		requestBody, err = json.Marshal(c)
 	}

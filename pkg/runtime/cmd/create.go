@@ -48,6 +48,7 @@ func init() {
 	createCmd.AddCommand(
 		generateCreateSubcommand(resources.CollectionType, "collection", []string{"co"}),
 		generateCreateSubcommand(resources.EnvironmentType, "environment", []string{"env"}),
+		generateCreateSubcommand(resources.MockType, "mock", []string{}),
 	)
 
 	rootCmd.AddCommand(createCmd)
@@ -89,6 +90,8 @@ func createResource(t resources.ResourceType) error {
 		id, err = service.CreateCollectionFromReader(context.Background(), inputReader, usingWorkspace)
 	case resources.EnvironmentType:
 		id, err = service.CreateEnvironmentFromReader(context.Background(), inputReader, usingWorkspace)
+	case resources.MockType:
+		id, err = service.CreateMockFromReader(context.Background(), inputReader, usingWorkspace)
 	}
 
 	if err != nil {
