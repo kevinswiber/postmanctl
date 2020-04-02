@@ -17,7 +17,11 @@ limitations under the License.
 package sdk
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"io"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/kevinswiber/postmanctl/pkg/sdk/client"
@@ -54,6 +58,66 @@ func (s *Service) Collection(ctx context.Context, id string) (*resources.Collect
 	}
 
 	return &resource.Collection, nil
+}
+
+// CreateCollectionFromReader creates a new collection.
+func (s *Service) CreateCollectionFromReader(ctx context.Context, reader io.Reader) (string, error) {
+	return s.CreateFromReader(ctx, resources.CollectionType, reader)
+}
+
+// CreateFromReader posts a new resource to the Postman API.
+func (s *Service) CreateFromReader(ctx context.Context, t resources.ResourceType, reader io.Reader) (string, error) {
+	b, err := ioutil.ReadAll(reader)
+
+	if err != nil {
+		return "", err
+	}
+
+	var v map[string]interface{}
+	if err := json.Unmarshal(b, &v); err != nil {
+		return "", err
+	}
+
+	var (
+		path             []string
+		requestBody      []byte
+		responseValueKey string
+	)
+
+	switch t {
+	case resources.CollectionType:
+		path = []string{"collections"}
+		responseValueKey = "collection"
+
+		c := struct {
+			Collection map[string]interface{} `json:"collection"`
+		}{
+			Collection: v,
+		}
+		requestBody, err = json.Marshal(c)
+	}
+
+	if err != nil {
+		return "", err
+	}
+
+	var responseBody interface{}
+	if _, err := s.post(ctx, requestBody, &responseBody, path...); err != nil {
+		return "", err
+	}
+
+	// Try a best attempt at returning the ID value.
+	var responseValue map[string]interface{}
+	responseValue = responseBody.(map[string]interface{})
+	if v, ok := responseValue[responseValueKey]; ok {
+		var vMap map[string]interface{}
+		vMap = v.(map[string]interface{})
+		if v2, ok := vMap["id"]; ok {
+			return v2.(string), nil
+		}
+		return "", nil
+	}
+	return "", nil
 }
 
 // Environments returns all environments.
@@ -221,7 +285,19 @@ func (s *Service) get(ctx context.Context, r interface{}, path ...string) (*http
 	req := client.NewRequestWithContext(ctx, s.Options)
 	res, err := req.Get().
 		Path(path...).
-		Body(&r).
+		Into(&r).
+		Do()
+
+	return res, err
+}
+
+func (s *Service) post(ctx context.Context, input []byte, output interface{}, path ...string) (*http.Response, error) {
+	req := client.NewRequestWithContext(ctx, s.Options)
+	res, err := req.Post().
+		Path(path...).
+		AddHeader("Content-Type", "application/json").
+		Body(bytes.NewReader(input)).
+		Into(&output).
 		Do()
 
 	return res, err

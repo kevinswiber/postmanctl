@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -51,13 +52,14 @@ func (e *RequestError) Error() string {
 
 // Request holds state for a Postman API request.
 type Request struct {
-	ctx     context.Context
-	options *Options
-	method  string
-	path    string
-	body    interface{}
-	headers http.Header
-	err     error
+	ctx           context.Context
+	options       *Options
+	method        string
+	path          string
+	requestReader io.Reader
+	result        interface{}
+	headers       http.Header
+	err           error
 }
 
 // NewRequest initializes a Postman API Request.
@@ -81,6 +83,12 @@ func NewRequestWithContext(ctx context.Context, c *Options) *Request {
 	return r
 }
 
+// AddHeader adds a header to the request.
+func (r *Request) AddHeader(key string, value string) *Request {
+	r.headers.Add(key, value)
+	return r
+}
+
 // Method sets the HTTP method of the request.
 func (r *Request) Method(m string) *Request {
 	r.method = m
@@ -93,23 +101,27 @@ func (r *Request) Get() *Request {
 	return r
 }
 
+// Post sets the HTTP method to POST
+func (r *Request) Post() *Request {
+	r.method = "POST"
+	return r
+}
+
 // Path sets the path of the HTTP request.
 func (r *Request) Path(p ...string) *Request {
 	r.path = path.Join(p...)
 	return r
 }
 
-// Body sets a destination resource for the output response
-func (r *Request) Body(o interface{}) *Request {
-	// TODO: Find a cleaner abstraction over print columns, resource identifiers, and data.
-	/*
-		if _, ok := o.(resources.Resource); !ok {
-			r.err = fmt.Errorf("unknown type used for request body: %+v", o)
-			return r
-		}
-	*/
+// Body sets an input resource for the request
+func (r *Request) Body(reader io.Reader) *Request {
+	r.requestReader = reader
+	return r
+}
 
-	r.body = o
+// Into sets a destination resource for the output response
+func (r *Request) Into(o interface{}) *Request {
+	r.result = o
 	return r
 }
 
@@ -132,7 +144,7 @@ func (r *Request) Do() (*http.Response, error) {
 		return nil, r.err
 	}
 
-	req, err := http.NewRequestWithContext(r.ctx, r.method, url, nil)
+	req, err := http.NewRequestWithContext(r.ctx, r.method, url, r.requestReader)
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +174,7 @@ func (r *Request) Do() (*http.Response, error) {
 		return nil, errorMessage
 	}
 
-	if r.body != nil {
+	if r.result != nil {
 		defer resp.Body.Close()
 		body, err := ioutil.ReadAll(resp.Body)
 
@@ -170,7 +182,7 @@ func (r *Request) Do() (*http.Response, error) {
 			return resp, err
 		}
 
-		json.Unmarshal(body, &r.body)
+		json.Unmarshal(body, &r.result)
 	}
 
 	return resp, nil

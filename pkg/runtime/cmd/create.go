@@ -17,36 +17,56 @@ limitations under the License.
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"os"
 
+	"github.com/kevinswiber/postmanctl/pkg/sdk/resources"
 	"github.com/spf13/cobra"
 )
 
-// createCmd represents the create command
-var createCmd = &cobra.Command{
-	Use:   "create",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+func init() {
+	createCmd := &cobra.Command{
+		Use:   "create",
+		Short: "Create Postman resources.",
+	}
+	createCmd.PersistentFlags().StringVarP(&inputFile, "filename", "f", "", "the filename used to create the resource (required)")
+	createCmd.MarkPersistentFlagRequired("filename")
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("create called")
-	},
+	createCmd.AddCommand(
+		generateCreateSubcommand(resources.CollectionType, "collection", []string{"co"}),
+	)
+
+	rootCmd.AddCommand(createCmd)
 }
 
-func init() {
-	rootCmd.AddCommand(createCmd)
+func generateCreateSubcommand(t resources.ResourceType, use string, aliases []string) *cobra.Command {
+	return &cobra.Command{
+		Use:     use,
+		Aliases: aliases,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return createResource(t)
+		},
+	}
+}
 
-	// Here you will define your flags and configuration settings.
+func createResource(t resources.ResourceType) error {
+	r, err := os.Open(inputFile)
+	defer r.Close()
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// createCmd.PersistentFlags().String("foo", "", "A help for foo")
+	if err != nil {
+		return err
+	}
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// createCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	id := ""
+	switch t {
+	case resources.CollectionType:
+		if id, err = service.CreateCollectionFromReader(context.Background(), r); err != nil {
+			return err
+		}
+	}
+
+	fmt.Println(id)
+
+	return nil
 }

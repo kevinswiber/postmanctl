@@ -40,6 +40,7 @@ var (
 	service       *sdk.Service
 	forAPI        string
 	forAPIVersion string
+	inputFile     string
 )
 
 var rootCmd = &cobra.Command{

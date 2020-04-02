@@ -53,13 +53,12 @@ func (o *OutputFormatValue) Type() string {
 	return "string"
 }
 
-// getCmd represents the get command
-var getCmd = &cobra.Command{
-	Use:   "get",
-	Short: "Retrieve Postman resources.",
-}
-
 func init() {
+	getCmd := &cobra.Command{
+		Use:   "get",
+		Short: "Retrieve Postman resources.",
+	}
+
 	apiVersionsCmd := &cobra.Command{
 		Use:     "api-versions",
 		Aliases: []string{"api-version"},
