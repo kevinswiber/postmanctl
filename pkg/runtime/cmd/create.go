@@ -51,6 +51,9 @@ func init() {
 		generateCreateSubcommand(resources.MonitorType, "monitor", []string{"mon"}),
 		generateCreateSubcommand(resources.MockType, "mock", []string{}),
 		generateCreateSubcommand(resources.WorkspaceType, "workspace", []string{"ws"}),
+		generateCreateSubcommand(resources.APIType, "api", []string{}),
+		generateCreateSubcommand(resources.APIVersionType, "api-version", []string{}),
+		generateCreateSubcommand(resources.SchemaType, "schema", []string{}),
 	)
 
 	rootCmd.AddCommand(createCmd)
@@ -66,6 +69,16 @@ func generateCreateSubcommand(t resources.ResourceType, use string, aliases []st
 	}
 
 	cmd.Flags().StringVarP(&usingWorkspace, "workspace", "w", "", "workspace for create operation")
+
+	if t == resources.APIVersionType || t == resources.SchemaType {
+		cmd.Flags().StringVar(&forAPI, "for-api", "", "the associated API ID (required)")
+		cmd.MarkFlagRequired("for-api")
+	}
+
+	if t == resources.SchemaType {
+		cmd.Flags().StringVar(&forAPIVersion, "for-api-version", "", "the associated API Version ID (required)")
+		cmd.MarkFlagRequired("for-api-version")
+	}
 
 	return &cmd
 }
@@ -87,15 +100,22 @@ func createResource(t resources.ResourceType) error {
 		err error
 	)
 
+	ctx := context.Background()
 	switch t {
 	case resources.CollectionType:
-		id, err = service.CreateCollectionFromReader(context.Background(), inputReader, usingWorkspace)
+		id, err = service.CreateCollectionFromReader(ctx, inputReader, usingWorkspace)
 	case resources.EnvironmentType:
-		id, err = service.CreateEnvironmentFromReader(context.Background(), inputReader, usingWorkspace)
+		id, err = service.CreateEnvironmentFromReader(ctx, inputReader, usingWorkspace)
 	case resources.MockType:
-		id, err = service.CreateMockFromReader(context.Background(), inputReader, usingWorkspace)
+		id, err = service.CreateMockFromReader(ctx, inputReader, usingWorkspace)
 	case resources.MonitorType:
-		id, err = service.CreateMonitorFromReader(context.Background(), inputReader, usingWorkspace)
+		id, err = service.CreateMonitorFromReader(ctx, inputReader, usingWorkspace)
+	case resources.APIType:
+		id, err = service.CreateAPIFromReader(ctx, inputReader, usingWorkspace)
+	case resources.APIVersionType:
+		id, err = service.CreateAPIVersionFromReader(ctx, inputReader, usingWorkspace, forAPI)
+	case resources.SchemaType:
+		id, err = service.CreateSchemaFromReader(ctx, inputReader, usingWorkspace, forAPI, forAPIVersion)
 	}
 
 	if err != nil {
