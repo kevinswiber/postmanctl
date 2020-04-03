@@ -21,6 +21,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -247,6 +248,8 @@ func (s *Service) CreateFromReader(ctx context.Context, t resources.ResourceType
 			Schema: v,
 		}
 		requestBody, err = json.Marshal(c)
+	default:
+		return "", fmt.Errorf("unable to create resource, %+v not supported", t)
 	}
 
 	if err != nil {
