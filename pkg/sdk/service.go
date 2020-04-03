@@ -135,7 +135,7 @@ func (s *Service) CreateAPIVersionFromReader(ctx context.Context, reader io.Read
 	return s.CreateFromReader(ctx, resources.APIVersionType, reader, queryParams, urlParams)
 }
 
-// CreateAPIVersionFromReader creates a new API Version.
+// CreateSchemaFromReader creates a new API Version.
 func (s *Service) CreateSchemaFromReader(ctx context.Context, reader io.Reader, workspace, apiID, apiVersionID string) (string, error) {
 	var queryParams map[string]string
 	if workspace != "" {
