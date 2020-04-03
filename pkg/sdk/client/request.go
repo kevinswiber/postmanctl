@@ -101,6 +101,19 @@ func (r *Request) Param(k, v string) *Request {
 	return r
 }
 
+// Params sets all query parameters.
+func (r *Request) Params(params map[string]string) *Request {
+	if r.params == nil {
+		r.params = make(url.Values)
+	}
+
+	for k, v := range params {
+		r.params.Add(k, v)
+	}
+
+	return r
+}
+
 // Method sets the HTTP method of the request.
 func (r *Request) Method(m string) *Request {
 	r.method = m
@@ -144,6 +157,7 @@ func (r *Request) URL() *url.URL {
 		*finalURL = *r.options.base
 	}
 	finalURL.Path = r.path
+	finalURL.RawQuery = r.params.Encode()
 
 	return finalURL
 }

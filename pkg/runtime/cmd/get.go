@@ -124,6 +124,9 @@ func init() {
 		},
 	}
 
+	apisCmd := generateGetSubcommand(resources.APIType, "apis", []string{"api"})
+	apisCmd.Flags().StringVar(&usingWorkspace, "workspace", "", "the associated workspace ID")
+
 	getCmd.AddCommand(
 		generateGetSubcommand(resources.CollectionType, "collections", []string{"collection", "co"}),
 		generateGetSubcommand(resources.EnvironmentType, "environments", []string{"environment", "env"}),
@@ -131,7 +134,7 @@ func init() {
 		generateGetSubcommand(resources.MockType, "mocks", []string{"mock"}),
 		generateGetSubcommand(resources.WorkspaceType, "workspaces", []string{"workspace", "ws"}),
 		userCmd,
-		generateGetSubcommand(resources.APIType, "apis", []string{"api"}),
+		apisCmd,
 		apiVersionsCmd,
 		apiRelationsCmd,
 		schemaCmd,
@@ -171,7 +174,7 @@ func getAllResources(resourceType resources.ResourceType, args ...string) error 
 	case resources.MonitorType:
 		resource, err = service.Monitors(ctx)
 	case resources.APIType:
-		resource, err = service.APIs(ctx)
+		resource, err = service.APIs(ctx, usingWorkspace)
 	case resources.APIVersionType:
 		resource, err = service.APIVersions(ctx, args[0])
 	case resources.WorkspaceType:
