@@ -32,7 +32,7 @@ func (r MockListItems) Format() ([]string, []interface{}) {
 		s[i] = v
 	}
 
-	return []string{"ID", "Name"}, s
+	return []string{"UID", "Name"}, s
 }
 
 // MockListItem represents a mock in a list of all mocks.
@@ -78,7 +78,7 @@ func (r Mock) Format() ([]string, []interface{}) {
 	s := make([]interface{}, 1)
 	s[0] = r
 
-	return []string{"ID", "Name"}, s
+	return []string{"UID", "Name"}, s
 }
 
 // MockSlice is a slice of Mock.
@@ -91,5 +91,5 @@ func (r MockSlice) Format() ([]string, []interface{}) {
 		s[i] = v
 	}
 
-	return []string{"ID", "Name"}, s
+	return []string{"UID", "Name"}, s
 }

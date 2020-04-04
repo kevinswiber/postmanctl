@@ -66,7 +66,7 @@ func (r CollectionListItems) Format() ([]string, []interface{}) {
 		s[i] = v
 	}
 
-	return []string{"ID", "Name"}, s
+	return []string{"UID", "Name"}, s
 }
 
 // CollectionListItem represents a single item in a CollectionListResponse.

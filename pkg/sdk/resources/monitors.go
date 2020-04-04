@@ -38,7 +38,7 @@ func (r MonitorListItems) Format() ([]string, []interface{}) {
 		s[i] = v
 	}
 
-	return []string{"ID", "Name"}, s
+	return []string{"UID", "Name"}, s
 }
 
 // MonitorListItem represents a single item in an MonitorListResponse.
@@ -103,7 +103,7 @@ func (r Monitor) Format() ([]string, []interface{}) {
 	s := make([]interface{}, 1)
 	s[0] = r
 
-	return []string{"ID", "Name"}, s
+	return []string{"UID", "Name"}, s
 }
 
 // UnmarshalJSON sets the receiver to a copy of data.
@@ -137,7 +137,7 @@ func (r MonitorSlice) Format() ([]string, []interface{}) {
 		s[i] = v
 	}
 
-	return []string{"ID", "Name"}, s
+	return []string{"UID", "Name"}, s
 }
 
 // MonitorOptions list options for a monitor.

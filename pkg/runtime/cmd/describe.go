@@ -359,11 +359,11 @@ func describeMonitors(r resources.MonitorSlice) (string, error) {
 	return tabbedString(func(out io.Writer) error {
 		for _, m := range r {
 			buf := new(bytes.Buffer)
-			buf.WriteString(fmt.Sprintf("ID:\t%s\n", m.ID))
+			buf.WriteString(fmt.Sprintf("UID:\t%s\n", m.UID))
 			buf.WriteString(fmt.Sprintf("Name:\t%s\n", m.Name))
 			buf.WriteString(fmt.Sprintf("Owner ID:\t%s\n", m.Owner))
-			buf.WriteString(fmt.Sprintf("Collection ID:\t%s\n", m.CollectionUID))
-			buf.WriteString(fmt.Sprintf("Environment ID:\t%s\n", m.EnvironmentUID))
+			buf.WriteString(fmt.Sprintf("Collection UID:\t%s\n", m.CollectionUID))
+			buf.WriteString(fmt.Sprintf("Environment UID:\t%s\n", m.EnvironmentUID))
 			buf.WriteString(fmt.Sprintf("Options:\n"))
 			buf.WriteString(fmt.Sprintf("  Strict SSL:\t%t\n", m.Options.StrictSSL))
 			buf.WriteString(fmt.Sprintf("  Follow Redirects:\t%t\n", m.Options.FollowRedirects))
@@ -387,11 +387,11 @@ func describeMocks(r resources.MockSlice) (string, error) {
 	return tabbedString(func(out io.Writer) error {
 		for _, m := range r {
 			buf := new(bytes.Buffer)
-			buf.WriteString(fmt.Sprintf("ID:\t%s\n", m.ID))
+			buf.WriteString(fmt.Sprintf("UID:\t%s\n", m.UID))
 			buf.WriteString(fmt.Sprintf("Name:\t%s\n", m.Name))
 			buf.WriteString(fmt.Sprintf("Owner ID:\t%s\n", m.Owner))
-			buf.WriteString(fmt.Sprintf("Collection ID:\t%s\n", m.Collection))
-			buf.WriteString(fmt.Sprintf("Environment ID:\t%s\n", m.Environment))
+			buf.WriteString(fmt.Sprintf("Collection UID:\t%s\n", m.Collection))
+			buf.WriteString(fmt.Sprintf("Environment UID:\t%s\n", m.Environment))
 			buf.WriteString(fmt.Sprintf("Mock URL:\t%s\n", m.MockURL))
 			buf.WriteString(fmt.Sprintf("Config:\n"))
 			buf.WriteString(fmt.Sprintf("  Match Body:\t%t\n", m.Config.MatchBody))
@@ -470,8 +470,8 @@ func describeAPIRelations(r *resources.APIRelations) (string, error) {
 		if len(r.Mock) > 0 {
 			buf.WriteString(fmt.Sprintf("Mock Servers:\n"))
 			for _, s := range r.Mock {
-				buf.WriteString(fmt.Sprintf("  ID\tName\tCreated At\tUpdated At\tURL\n"))
-				buf.WriteString(fmt.Sprintf("  --\t----\t----------\t----------\t---\n"))
+				buf.WriteString(fmt.Sprintf("  UID\tName\tCreated At\tUpdated At\tURL\n"))
+				buf.WriteString(fmt.Sprintf("  ---\t----\t----------\t----------\t---\n"))
 				buf.WriteString(fmt.Sprintf("  %s\t%s\t%s\t%s\t%s\n", s.ID, s.Name, s.CreatedAt, s.UpdatedAt, s.URL))
 			}
 		}
@@ -479,8 +479,8 @@ func describeAPIRelations(r *resources.APIRelations) (string, error) {
 		if len(r.Documentation) > 0 {
 			buf.WriteString(fmt.Sprintf("Documentation:\n"))
 			for _, s := range r.Documentation {
-				buf.WriteString(fmt.Sprintf("  ID\tName\tCreated At\tUpdated At\n"))
-				buf.WriteString(fmt.Sprintf("  --\t----\t----------\t----------\n"))
+				buf.WriteString(fmt.Sprintf("  UID\tName\tCreated At\tUpdated At\n"))
+				buf.WriteString(fmt.Sprintf("  ---\t----\t----------\t----------\n"))
 				buf.WriteString(fmt.Sprintf("  %s\t%s\t%s\t%s\n", s.ID, s.Name, s.CreatedAt, s.UpdatedAt))
 			}
 		}
@@ -488,8 +488,8 @@ func describeAPIRelations(r *resources.APIRelations) (string, error) {
 		if len(r.Environment) > 0 {
 			buf.WriteString(fmt.Sprintf("Environments:\n"))
 			for _, s := range r.Environment {
-				buf.WriteString(fmt.Sprintf("  ID\tName\tCreated At\tUpdated At\n"))
-				buf.WriteString(fmt.Sprintf("  --\t----\t----------\t----------\n"))
+				buf.WriteString(fmt.Sprintf("  UID\tName\tCreated At\tUpdated At\n"))
+				buf.WriteString(fmt.Sprintf("  ---\t----\t----------\t----------\n"))
 				buf.WriteString(fmt.Sprintf("  %s\t%s\t%s\t%s\n", s.ID, s.Name, s.CreatedAt, s.UpdatedAt))
 			}
 		}
@@ -497,8 +497,8 @@ func describeAPIRelations(r *resources.APIRelations) (string, error) {
 		if len(r.TestSuite) > 0 {
 			buf.WriteString(fmt.Sprintf("Test Suites:\n"))
 			for _, s := range r.TestSuite {
-				buf.WriteString(fmt.Sprintf("  ID\tName\tCreated At\tUpdated At\n"))
-				buf.WriteString(fmt.Sprintf("  --\t----\t----------\t----------\n"))
+				buf.WriteString(fmt.Sprintf("  UID\tName\tCreated At\tUpdated At\n"))
+				buf.WriteString(fmt.Sprintf("  ---\t----\t----------\t----------\n"))
 				buf.WriteString(fmt.Sprintf("  %s\t%s\t%s\t%s\n", s.ID, s.Name, s.CreatedAt, s.UpdatedAt))
 			}
 		}
@@ -506,8 +506,8 @@ func describeAPIRelations(r *resources.APIRelations) (string, error) {
 		if len(r.IntegrationTest) > 0 {
 			buf.WriteString(fmt.Sprintf("Integration Tests:\n"))
 			for _, s := range r.IntegrationTest {
-				buf.WriteString(fmt.Sprintf("  ID\tName\tCreated At\tUpdated At\n"))
-				buf.WriteString(fmt.Sprintf("  --\t----\t----------\t----------\n"))
+				buf.WriteString(fmt.Sprintf("  UID\tName\tCreated At\tUpdated At\n"))
+				buf.WriteString(fmt.Sprintf("  ---\t----\t----------\t----------\n"))
 				buf.WriteString(fmt.Sprintf("  %s\t%s\t%s\t%s\n", s.ID, s.Name, s.CreatedAt, s.UpdatedAt))
 			}
 		}
@@ -515,8 +515,8 @@ func describeAPIRelations(r *resources.APIRelations) (string, error) {
 		if len(r.ContractTest) > 0 {
 			buf.WriteString(fmt.Sprintf("Contract Tests:\n"))
 			for _, s := range r.ContractTest {
-				buf.WriteString(fmt.Sprintf("  ID\tName\tCreated At\tUpdated At\n"))
-				buf.WriteString(fmt.Sprintf("  --\t----\t----------\t----------\n"))
+				buf.WriteString(fmt.Sprintf("  UID\tName\tCreated At\tUpdated At\n"))
+				buf.WriteString(fmt.Sprintf("  ---\t----\t----------\t----------\n"))
 				buf.WriteString(fmt.Sprintf("  %s\t%s\t%s\t%s\n", s.ID, s.Name, s.CreatedAt, s.UpdatedAt))
 			}
 		}
@@ -524,8 +524,8 @@ func describeAPIRelations(r *resources.APIRelations) (string, error) {
 		if len(r.Monitor) > 0 {
 			buf.WriteString(fmt.Sprintf("Monitors:\n"))
 			for _, s := range r.Monitor {
-				buf.WriteString(fmt.Sprintf("  ID\tName\tCreated At\tUpdated At\n"))
-				buf.WriteString(fmt.Sprintf("  --\t----\t----------\t----------\n"))
+				buf.WriteString(fmt.Sprintf("  UID\tName\tCreated At\tUpdated At\n"))
+				buf.WriteString(fmt.Sprintf("  ---\t----\t----------\t----------\n"))
 				buf.WriteString(fmt.Sprintf("  %s\t%s\t%s\t%s\n", s.ID, s.Name, s.CreatedAt, s.UpdatedAt))
 			}
 		}

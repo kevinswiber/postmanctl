@@ -32,7 +32,7 @@ func (r EnvironmentListItems) Format() ([]string, []interface{}) {
 		s[i] = v
 	}
 
-	return []string{"ID", "Name"}, s
+	return []string{"UID", "Name"}, s
 }
 
 // EnvironmentListItem represents a single item in an EnvironmentListResponse.
