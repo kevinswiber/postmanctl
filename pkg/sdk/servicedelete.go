@@ -123,6 +123,9 @@ func (s *Service) Delete(ctx context.Context, t resources.ResourceType, urlParam
 	case resources.MonitorType:
 		path = []string{"monitors", urlParams["ID"]}
 		responseValueKey = "monitor"
+	case resources.WorkspaceType:
+		path = []string{"workspaces", urlParams["ID"]}
+		responseValueKey = "workspace"
 	case resources.APIType:
 		path = []string{"apis", urlParams["ID"]}
 		responseValueKey = "api"

@@ -166,6 +166,16 @@ func (s *Service) ReplaceFromReader(ctx context.Context, t resources.ResourceTyp
 			Monitor: v,
 		}
 		requestBody, err = json.Marshal(c)
+	case resources.WorkspaceType:
+		path = []string{"workspaces", urlParams["ID"]}
+		responseValueKey = "workspace"
+
+		c := struct {
+			Workspace map[string]interface{} `json:"workspace"`
+		}{
+			Workspace: v,
+		}
+		requestBody, err = json.Marshal(c)
 	case resources.APIType:
 		path = []string{"apis", urlParams["ID"]}
 		responseValueKey = "api"
