@@ -58,3 +58,43 @@ func (s *Service) ForkCollection(ctx context.Context, id, workspace, label strin
 	}
 	return "", nil
 }
+
+// MergeCollection makes a fork of an existing collection.
+func (s *Service) MergeCollection(ctx context.Context, id, destination, strategy string) (string, error) {
+	responseValueKey := "collection"
+
+	input := struct {
+		Source      string `json:"source"`
+		Destination string `json:"destination"`
+		Strategy    string `json:"strategy"`
+	}{
+		Source:      id,
+		Destination: destination,
+		Strategy:    strategy,
+	}
+	requestBody, err := json.Marshal(input)
+	if err != nil {
+		return "", err
+	}
+
+	var responseBody interface{}
+	if _, err := s.post(ctx, requestBody, &responseBody, nil, "collections", "merge"); err != nil {
+		return "", err
+	}
+
+	// Try a best attempt at returning the ID value.
+	var responseValue map[string]interface{}
+	responseValue = responseBody.(map[string]interface{})
+	if v, ok := responseValue[responseValueKey]; ok {
+		var vMap map[string]interface{}
+		vMap = v.(map[string]interface{})
+		if v2, ok := vMap["uid"]; ok {
+			return v2.(string), nil
+		}
+		if v2, ok := vMap["id"]; ok {
+			return v2.(string), nil
+		}
+		return "", nil
+	}
+	return "", nil
+}

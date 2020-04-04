@@ -35,17 +35,19 @@ import (
 )
 
 var (
-	cfgFile        string
-	cfg            *config.Config
-	configContext  config.Context
-	options        *client.Options
-	service        *sdk.Service
-	forAPI         string
-	forAPIVersion  string
-	inputFile      string
-	inputReader    io.Reader
-	usingWorkspace string
-	forkLabel      string
+	cfgFile         string
+	cfg             *config.Config
+	configContext   config.Context
+	options         *client.Options
+	service         *sdk.Service
+	forAPI          string
+	forAPIVersion   string
+	inputFile       string
+	inputReader     io.Reader
+	usingWorkspace  string
+	forkLabel       string
+	mergeStrategy   string
+	mergeCollection string
 )
 
 var rootCmd = &cobra.Command{
