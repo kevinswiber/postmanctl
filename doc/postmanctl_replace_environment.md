@@ -13,8 +13,7 @@ postmanctl replace environment [flags]
 ### Options
 
 ```
-  -h, --help               help for environment
-  -w, --workspace string   workspace for replace operation
+  -h, --help   help for environment
 ```
 
 ### Options inherited from parent commands

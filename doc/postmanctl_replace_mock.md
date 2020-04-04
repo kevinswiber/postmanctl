@@ -13,8 +13,7 @@ postmanctl replace mock [flags]
 ### Options
 
 ```
-  -h, --help               help for mock
-  -w, --workspace string   workspace for replace operation
+  -h, --help   help for mock
 ```
 
 ### Options inherited from parent commands

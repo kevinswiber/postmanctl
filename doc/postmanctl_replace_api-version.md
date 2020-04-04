@@ -13,9 +13,8 @@ postmanctl replace api-version [flags]
 ### Options
 
 ```
-      --for-api string     the associated API ID (required)
-  -h, --help               help for api-version
-  -w, --workspace string   workspace for replace operation
+      --for-api string   the associated API ID (required)
+  -h, --help             help for api-version
 ```
 
 ### Options inherited from parent commands

@@ -13,8 +13,7 @@ postmanctl replace monitor [flags]
 ### Options
 
 ```
-  -h, --help               help for monitor
-  -w, --workspace string   workspace for replace operation
+  -h, --help   help for monitor
 ```
 
 ### Options inherited from parent commands

@@ -13,8 +13,7 @@ postmanctl replace api [flags]
 ### Options
 
 ```
-  -h, --help               help for api
-  -w, --workspace string   workspace for replace operation
+  -h, --help   help for api
 ```
 
 ### Options inherited from parent commands

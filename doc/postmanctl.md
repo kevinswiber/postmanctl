@@ -16,10 +16,11 @@ Controls the Postman API
 ### SEE ALSO
 
 * [postmanctl create](postmanctl_create.md)	 - Create new Postman resources.
-* [postmanctl delete](postmanctl_delete.md)	 - A brief description of your command
+* [postmanctl delete](postmanctl_delete.md)	 - Delete existing Postman resources.
 * [postmanctl describe](postmanctl_describe.md)	 - Describe an entity in the Postman API
-* [postmanctl fork](postmanctl_fork.md)	 - A brief description of your command
+* [postmanctl fork](postmanctl_fork.md)	 - Create a fork of a Postman resource.
 * [postmanctl get](postmanctl_get.md)	 - Retrieve Postman resources.
+* [postmanctl merge](postmanctl_merge.md)	 - Merge a fork of a Postman resource.
 * [postmanctl replace](postmanctl_replace.md)	 - Replace existing Postman resources.
 * [postmanctl run](postmanctl_run.md)	 - Execute runnable Postman resources.
 

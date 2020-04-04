@@ -13,8 +13,7 @@ postmanctl replace workspace [flags]
 ### Options
 
 ```
-  -h, --help               help for workspace
-  -w, --workspace string   workspace for replace operation
+  -h, --help   help for workspace
 ```
 
 ### Options inherited from parent commands

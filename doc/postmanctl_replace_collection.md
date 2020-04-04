@@ -13,8 +13,7 @@ postmanctl replace collection [flags]
 ### Options
 
 ```
-  -h, --help               help for collection
-  -w, --workspace string   workspace for replace operation
+  -h, --help   help for collection
 ```
 
 ### Options inherited from parent commands
