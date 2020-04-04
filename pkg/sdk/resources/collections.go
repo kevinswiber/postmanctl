@@ -20,25 +20,25 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/kevinswiber/postmanctl/pkg/sdk/resources/raw"
+	"github.com/kevinswiber/postmanctl/pkg/sdk/resources/gen"
 )
 
-//go:generate sh -c "schema-generate -p raw ../../../collection.json  | sed 's/Id/ID/g' > ./raw/collection.go"
+//go:generate sh -c "schema-generate -p gen ../../../schema/collection.schema.json  | sed 's/Id/ID/g' > ./gen/collection.go"
 
 // Collection represents a Postman Collection.
 type Collection struct {
-	*raw.Collection
+	*gen.Collection
 	Items *ItemTree
 }
 
 // UnmarshalJSON converts JSON to a struct.
 func (c *Collection) UnmarshalJSON(b []byte) error {
-	var rawC raw.Collection
-	if err := json.Unmarshal(b, &rawC); err != nil {
+	var genC gen.Collection
+	if err := json.Unmarshal(b, &genC); err != nil {
 		return err
 	}
 
-	c.Collection = &rawC
+	c.Collection = &genC
 	node := ItemTreeNode{}
 	if err := populateItemGroup(&node, c.Collection.Item); err != nil {
 		return err
@@ -115,33 +115,33 @@ func (r CollectionSlice) Format() ([]string, []interface{}) {
 
 // Item represents an item (request) in a Collection.
 type Item struct {
-	*raw.Item
+	*gen.Item
 	Events []Event
 }
 
 // ItemGroup represents a folder in a Collection.
 type ItemGroup struct {
-	*raw.ItemGroup
+	*gen.ItemGroup
 	Events []Event
 }
 
 // Event represents an item event.
 type Event struct {
-	*raw.Event
+	*gen.Event
 }
 
 // UnmarshalJSON converts JSON to a struct.
 func (item *Item) UnmarshalJSON(b []byte) error {
-	var rawItem raw.Item
-	if err := json.Unmarshal(b, &rawItem); err != nil {
+	var genItem gen.Item
+	if err := json.Unmarshal(b, &genItem); err != nil {
 		return err
 	}
 
-	item.Item = &rawItem
+	item.Item = &genItem
 	item.Events = make([]Event, len(item.Item.Event))
 
-	for i, rawEvent := range item.Item.Event {
-		item.Events[i] = Event{Event: rawEvent}
+	for i, genEvent := range item.Item.Event {
+		item.Events[i] = Event{Event: genEvent}
 	}
 
 	return nil
@@ -165,7 +165,7 @@ func populateItemGroup(b *ItemTreeNode, item []interface{}) error {
 					return err
 				}
 
-				var ig raw.ItemGroup
+				var ig gen.ItemGroup
 				if err := json.Unmarshal(data, &ig); err != nil {
 					return err
 				}

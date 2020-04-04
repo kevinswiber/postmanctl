@@ -16,7 +16,7 @@ limitations under the License.
 
 package main
 
-import "github.com/kevinswiber/postmanctl/pkg/runtime/cmd"
+import "github.com/kevinswiber/postmanctl/internal/runtime/cmd"
 
 func main() {
 	cmd.Execute()

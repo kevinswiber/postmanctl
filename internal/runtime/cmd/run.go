@@ -22,15 +22,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// runCmd represents the run command
-var runCmd = &cobra.Command{
-	Use:   "run",
-	Short: "Execute runnable Postman resources.",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("run called")
-	},
-}
-
 func init() {
-	rootCmd.AddCommand(runCmd)
+	var cmd = &cobra.Command{
+		Use:   "run",
+		Short: "Execute runnable Postman resources.",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("run called")
+		},
+	}
+	rootCmd.AddCommand(cmd)
 }

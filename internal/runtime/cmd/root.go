@@ -24,7 +24,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/kevinswiber/postmanctl/pkg/runtime/config"
+	"github.com/kevinswiber/postmanctl/internal/runtime/config"
 	"github.com/kevinswiber/postmanctl/pkg/sdk"
 	"github.com/kevinswiber/postmanctl/pkg/sdk/client"
 	"github.com/spf13/cobra"
