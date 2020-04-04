@@ -17,36 +17,114 @@ limitations under the License.
 package cmd
 
 import (
+	"context"
+	"errors"
 	"fmt"
+	"os"
 
+	"github.com/kevinswiber/postmanctl/pkg/sdk/resources"
 	"github.com/spf13/cobra"
 )
 
-// replaceCmd represents the replace command
-var replaceCmd = &cobra.Command{
-	Use:   "replace",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+func init() {
+	replaceCmd := &cobra.Command{
+		Use:   "replace",
+		Short: "Replace existing Postman resources.",
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			stat, _ := os.Stdin.Stat()
+			if (stat.Mode() & os.ModeCharDevice) == 0 {
+				inputReader = os.Stdin
+			} else {
+				if inputFile == "" {
+					return errors.New("flag \"filename\" not set, use \"--filename\" or stdin")
+				}
+			}
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("replace called")
-	},
+			return nil
+		},
+	}
+	replaceCmd.PersistentFlags().StringVarP(&inputFile, "filename", "f", "", "the filename used to replace the resource (required when not using data from stdin)")
+
+	replaceCmd.AddCommand(
+		generateReplaceSubcommand(resources.CollectionType, "collection", []string{"co"}),
+		generateReplaceSubcommand(resources.EnvironmentType, "environment", []string{"env"}),
+		generateReplaceSubcommand(resources.MonitorType, "monitor", []string{"mon"}),
+		generateReplaceSubcommand(resources.MockType, "mock", []string{}),
+		generateReplaceSubcommand(resources.WorkspaceType, "workspace", []string{"ws"}),
+		generateReplaceSubcommand(resources.APIType, "api", []string{}),
+		generateReplaceSubcommand(resources.APIVersionType, "api-version", []string{}),
+		generateReplaceSubcommand(resources.SchemaType, "schema", []string{}),
+	)
+
+	rootCmd.AddCommand(replaceCmd)
 }
 
-func init() {
-	rootCmd.AddCommand(replaceCmd)
+func generateReplaceSubcommand(t resources.ResourceType, use string, aliases []string) *cobra.Command {
+	cmd := cobra.Command{
+		Use:     use,
+		Aliases: aliases,
+		Args:    cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return replaceResource(t, args[0])
+		},
+	}
 
-	// Here you will define your flags and configuration settings.
+	cmd.Flags().StringVarP(&usingWorkspace, "workspace", "w", "", "workspace for replace operation")
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// replaceCmd.PersistentFlags().String("foo", "", "A help for foo")
+	if t == resources.APIVersionType || t == resources.SchemaType {
+		cmd.Flags().StringVar(&forAPI, "for-api", "", "the associated API ID (required)")
+		cmd.MarkFlagRequired("for-api")
+	}
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// replaceCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	if t == resources.SchemaType {
+		cmd.Flags().StringVar(&forAPIVersion, "for-api-version", "", "the associated API Version ID (required)")
+		cmd.MarkFlagRequired("for-api-version")
+	}
+
+	return &cmd
+}
+
+func replaceResource(t resources.ResourceType, resourceID string) error {
+	if inputReader == nil {
+		r, err := os.Open(inputFile)
+		defer r.Close()
+
+		if err != nil {
+			return err
+		}
+
+		inputReader = r
+	}
+
+	var (
+		id  string
+		err error
+	)
+
+	ctx := context.Background()
+	switch t {
+	case resources.CollectionType:
+		id, err = service.ReplaceCollectionFromReader(ctx, inputReader, usingWorkspace, resourceID)
+	case resources.EnvironmentType:
+		id, err = service.ReplaceEnvironmentFromReader(ctx, inputReader, usingWorkspace, resourceID)
+	case resources.MockType:
+		id, err = service.ReplaceMockFromReader(ctx, inputReader, usingWorkspace, resourceID)
+	case resources.MonitorType:
+		id, err = service.ReplaceMonitorFromReader(ctx, inputReader, usingWorkspace, resourceID)
+	case resources.APIType:
+		id, err = service.ReplaceAPIFromReader(ctx, inputReader, usingWorkspace, resourceID)
+	case resources.APIVersionType:
+		id, err = service.ReplaceAPIVersionFromReader(ctx, inputReader, usingWorkspace, forAPI, resourceID)
+	case resources.SchemaType:
+		id, err = service.ReplaceSchemaFromReader(ctx, inputReader, usingWorkspace, forAPI, forAPIVersion, resourceID)
+	}
+
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	fmt.Println(id)
+
+	return nil
 }

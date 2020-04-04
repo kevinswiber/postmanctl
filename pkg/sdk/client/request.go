@@ -132,6 +132,12 @@ func (r *Request) Post() *Request {
 	return r
 }
 
+// Put sets the HTTP method to PUT
+func (r *Request) Put() *Request {
+	r.method = "PUT"
+	return r
+}
+
 // Path sets the path of the HTTP request.
 func (r *Request) Path(p ...string) *Request {
 	r.path = path.Join(p...)

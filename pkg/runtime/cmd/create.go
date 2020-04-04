@@ -29,7 +29,7 @@ import (
 func init() {
 	createCmd := &cobra.Command{
 		Use:   "create",
-		Short: "Create Postman resources.",
+		Short: "Create new Postman resources.",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			stat, _ := os.Stdin.Stat()
 			if (stat.Mode() & os.ModeCharDevice) == 0 {

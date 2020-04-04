@@ -267,6 +267,242 @@ func (s *Service) CreateFromReader(ctx context.Context, t resources.ResourceType
 	if v, ok := responseValue[responseValueKey]; ok {
 		var vMap map[string]interface{}
 		vMap = v.(map[string]interface{})
+		if v2, ok := vMap["uid"]; ok {
+			return v2.(string), nil
+		}
+		if v2, ok := vMap["id"]; ok {
+			return v2.(string), nil
+		}
+		return "", nil
+	}
+	return "", nil
+}
+
+// ReplaceCollectionFromReader creates a new collection.
+func (s *Service) ReplaceCollectionFromReader(ctx context.Context, reader io.Reader, workspace, resourceID string) (string, error) {
+	var params map[string]string
+	if workspace != "" {
+		params = make(map[string]string)
+		params["workspace"] = workspace
+	}
+
+	urlParams := make(map[string]string)
+	urlParams["ID"] = resourceID
+
+	return s.ReplaceFromReader(ctx, resources.CollectionType, reader, params, urlParams)
+}
+
+// ReplaceEnvironmentFromReader creates a new environment.
+func (s *Service) ReplaceEnvironmentFromReader(ctx context.Context, reader io.Reader, workspace, resourceID string) (string, error) {
+	var params map[string]string
+	if workspace != "" {
+		params = make(map[string]string)
+		params["workspace"] = workspace
+	}
+
+	urlParams := make(map[string]string)
+	urlParams["ID"] = resourceID
+
+	return s.ReplaceFromReader(ctx, resources.EnvironmentType, reader, params, urlParams)
+}
+
+// ReplaceMockFromReader creates a new mock.
+func (s *Service) ReplaceMockFromReader(ctx context.Context, reader io.Reader, workspace, resourceID string) (string, error) {
+	var params map[string]string
+	if workspace != "" {
+		params = make(map[string]string)
+		params["workspace"] = workspace
+	}
+
+	urlParams := make(map[string]string)
+	urlParams["ID"] = resourceID
+
+	return s.ReplaceFromReader(ctx, resources.MockType, reader, params, urlParams)
+}
+
+// ReplaceMonitorFromReader creates a new monitor.
+func (s *Service) ReplaceMonitorFromReader(ctx context.Context, reader io.Reader, workspace, resourceID string) (string, error) {
+	var params map[string]string
+	if workspace != "" {
+		params = make(map[string]string)
+		params["workspace"] = workspace
+	}
+
+	urlParams := make(map[string]string)
+	urlParams["ID"] = resourceID
+
+	return s.ReplaceFromReader(ctx, resources.MonitorType, reader, params, urlParams)
+}
+
+// ReplaceAPIFromReader creates a new API.
+func (s *Service) ReplaceAPIFromReader(ctx context.Context, reader io.Reader, workspace, resourceID string) (string, error) {
+	var params map[string]string
+	if workspace != "" {
+		params = make(map[string]string)
+		params["workspace"] = workspace
+	}
+
+	urlParams := make(map[string]string)
+	urlParams["ID"] = resourceID
+
+	return s.ReplaceFromReader(ctx, resources.APIType, reader, params, urlParams)
+}
+
+// ReplaceAPIVersionFromReader creates a new API Version.
+func (s *Service) ReplaceAPIVersionFromReader(ctx context.Context, reader io.Reader, workspace, resourceID, apiID string) (string, error) {
+	var queryParams map[string]string
+	if workspace != "" {
+		queryParams = make(map[string]string)
+		queryParams["workspace"] = workspace
+	}
+
+	if apiID == "" {
+		return "", errors.New("an API ID is required for creating a new API version")
+	}
+
+	urlParams := make(map[string]string)
+	urlParams["ID"] = resourceID
+	urlParams["apiID"] = apiID
+
+	return s.ReplaceFromReader(ctx, resources.APIVersionType, reader, queryParams, urlParams)
+}
+
+// ReplaceSchemaFromReader creates a new API Version.
+func (s *Service) ReplaceSchemaFromReader(ctx context.Context, reader io.Reader, workspace, resourceID, apiID, apiVersionID string) (string, error) {
+	var queryParams map[string]string
+	if workspace != "" {
+		queryParams = make(map[string]string)
+		queryParams["workspace"] = workspace
+	}
+
+	if apiID == "" {
+		return "", errors.New("an API ID is required for creating a new schema")
+	}
+
+	if apiVersionID == "" {
+		return "", errors.New("an API Version ID is required for creating a new schema")
+	}
+
+	urlParams := make(map[string]string)
+	urlParams["ID"] = resourceID
+	urlParams["apiID"] = apiID
+	urlParams["apiVersionID"] = apiVersionID
+
+	return s.ReplaceFromReader(ctx, resources.APIVersionType, reader, queryParams, urlParams)
+}
+
+// ReplaceFromReader posts a new resource to the Postman API.
+func (s *Service) ReplaceFromReader(ctx context.Context, t resources.ResourceType, reader io.Reader, queryParams, urlParams map[string]string) (string, error) {
+	b, err := ioutil.ReadAll(reader)
+
+	if err != nil {
+		return "", err
+	}
+
+	var v map[string]interface{}
+	if err := json.Unmarshal(b, &v); err != nil {
+		return "", err
+	}
+
+	var (
+		path             []string
+		requestBody      []byte
+		responseValueKey string
+	)
+
+	switch t {
+	case resources.CollectionType:
+		path = []string{"collections", urlParams["ID"]}
+		responseValueKey = "collection"
+
+		c := struct {
+			Collection map[string]interface{} `json:"collection"`
+		}{
+			Collection: v,
+		}
+		requestBody, err = json.Marshal(c)
+	case resources.EnvironmentType:
+		path = []string{"environments", urlParams["ID"]}
+		responseValueKey = "environment"
+
+		c := struct {
+			Environment map[string]interface{} `json:"environment"`
+		}{
+			Environment: v,
+		}
+		requestBody, err = json.Marshal(c)
+	case resources.MockType:
+		path = []string{"mocks", urlParams["ID"]}
+		responseValueKey = "mock"
+
+		c := struct {
+			Mock map[string]interface{} `json:"mock"`
+		}{
+			Mock: v,
+		}
+		requestBody, err = json.Marshal(c)
+	case resources.MonitorType:
+		path = []string{"monitors", urlParams["ID"]}
+		responseValueKey = "monitor"
+
+		c := struct {
+			Monitor map[string]interface{} `json:"monitor"`
+		}{
+			Monitor: v,
+		}
+		requestBody, err = json.Marshal(c)
+	case resources.APIType:
+		path = []string{"apis", urlParams["ID"]}
+		responseValueKey = "api"
+
+		c := struct {
+			API map[string]interface{} `json:"api"`
+		}{
+			API: v,
+		}
+		requestBody, err = json.Marshal(c)
+	case resources.APIVersionType:
+		path = []string{"apis", urlParams["apiID"], "versions", urlParams["ID"]}
+		responseValueKey = "version"
+
+		c := struct {
+			Version map[string]interface{} `json:"version"`
+		}{
+			Version: v,
+		}
+		requestBody, err = json.Marshal(c)
+	case resources.SchemaType:
+		path = []string{"apis", urlParams["apiID"], "versions", urlParams["apiVersionID"], "schemas", urlParams["ID"]}
+		responseValueKey = "version"
+
+		c := struct {
+			Schema map[string]interface{} `json:"schema"`
+		}{
+			Schema: v,
+		}
+		requestBody, err = json.Marshal(c)
+	default:
+		return "", fmt.Errorf("unable to create resource, %+v not supported", t)
+	}
+
+	if err != nil {
+		return "", err
+	}
+
+	var responseBody interface{}
+	if _, err := s.put(ctx, requestBody, &responseBody, queryParams, path...); err != nil {
+		return "", err
+	}
+
+	// Try a best attempt at returning the ID value.
+	var responseValue map[string]interface{}
+	responseValue = responseBody.(map[string]interface{})
+	if v, ok := responseValue[responseValueKey]; ok {
+		var vMap map[string]interface{}
+		vMap = v.(map[string]interface{})
+		if v2, ok := vMap["uid"]; ok {
+			return v2.(string), nil
+		}
 		if v2, ok := vMap["id"]; ok {
 			return v2.(string), nil
 		}
@@ -456,6 +692,19 @@ func (s *Service) get(ctx context.Context, r interface{}, queryParams map[string
 func (s *Service) post(ctx context.Context, input []byte, output interface{}, queryParams map[string]string, path ...string) (*http.Response, error) {
 	req := client.NewRequestWithContext(ctx, s.Options)
 	res, err := req.Post().
+		Path(path...).
+		Params(queryParams).
+		AddHeader("Content-Type", "application/json").
+		Body(bytes.NewReader(input)).
+		Into(&output).
+		Do()
+
+	return res, err
+}
+
+func (s *Service) put(ctx context.Context, input []byte, output interface{}, queryParams map[string]string, path ...string) (*http.Response, error) {
+	req := client.NewRequestWithContext(ctx, s.Options)
+	res, err := req.Put().
 		Path(path...).
 		Params(queryParams).
 		AddHeader("Content-Type", "application/json").
