@@ -45,6 +45,7 @@ var (
 	inputFile      string
 	inputReader    io.Reader
 	usingWorkspace string
+	forkLabel      string
 )
 
 var rootCmd = &cobra.Command{

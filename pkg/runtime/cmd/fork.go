@@ -17,36 +17,38 @@ limitations under the License.
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
 
-// forkCmd represents the fork command
-var forkCmd = &cobra.Command{
-	Use:   "fork",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("fork called")
-	},
-}
-
 func init() {
-	rootCmd.AddCommand(forkCmd)
+	var cmd = &cobra.Command{
+		Use:   "fork",
+		Short: "Create a fork of a Postman resource.",
+	}
 
-	// Here you will define your flags and configuration settings.
+	var forkCollectionCmd = &cobra.Command{
+		Use:     "collection",
+		Aliases: []string{"co"},
+		Args:    cobra.MinimumNArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			id, err := service.ForkCollection(context.Background(), args[0], usingWorkspace, forkLabel)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(1)
+			}
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// forkCmd.PersistentFlags().String("foo", "", "A help for foo")
+			fmt.Println(id)
+		},
+	}
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// forkCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	forkCollectionCmd.Flags().StringVarP(&usingWorkspace, "workspace", "w", "", "workspace for fork operation")
+	forkCollectionCmd.Flags().StringVarP(&forkLabel, "label", "l", "", "label to associate with the forked collection (required)")
+	forkCollectionCmd.MarkFlagRequired("label")
+
+	cmd.AddCommand(forkCollectionCmd)
+	rootCmd.AddCommand(cmd)
 }

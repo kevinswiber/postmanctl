@@ -18,6 +18,7 @@ package resources
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/kevinswiber/postmanctl/pkg/sdk/resources/raw"
 )
@@ -75,6 +76,14 @@ type CollectionListItem struct {
 	Name  string `json:"name"`
 	Owner string `json:"owner"`
 	UID   string `json:"uid"`
+	Fork  *Fork  `json:"fork,omitempty"`
+}
+
+// Fork represents fork metadata for a collection.
+type Fork struct {
+	Label     string    `json:"label"`
+	CreatedAt time.Time `json:"createdAt"`
+	From      string    `json:"from"`
 }
 
 // CollectionResponse is the top-level struct representation of a collection
