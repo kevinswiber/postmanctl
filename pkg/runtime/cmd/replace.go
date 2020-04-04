@@ -69,8 +69,6 @@ func generateReplaceSubcommand(t resources.ResourceType, use string, aliases []s
 		},
 	}
 
-	cmd.Flags().StringVarP(&usingWorkspace, "workspace", "w", "", "workspace for replace operation")
-
 	if t == resources.APIVersionType || t == resources.SchemaType {
 		cmd.Flags().StringVar(&forAPI, "for-api", "", "the associated API ID (required)")
 		cmd.MarkFlagRequired("for-api")
@@ -104,19 +102,21 @@ func replaceResource(t resources.ResourceType, resourceID string) error {
 	ctx := context.Background()
 	switch t {
 	case resources.CollectionType:
-		id, err = service.ReplaceCollectionFromReader(ctx, inputReader, usingWorkspace, resourceID)
+		id, err = service.ReplaceCollectionFromReader(ctx, inputReader, resourceID)
 	case resources.EnvironmentType:
-		id, err = service.ReplaceEnvironmentFromReader(ctx, inputReader, usingWorkspace, resourceID)
+		id, err = service.ReplaceEnvironmentFromReader(ctx, inputReader, resourceID)
 	case resources.MockType:
-		id, err = service.ReplaceMockFromReader(ctx, inputReader, usingWorkspace, resourceID)
+		id, err = service.ReplaceMockFromReader(ctx, inputReader, resourceID)
 	case resources.MonitorType:
-		id, err = service.ReplaceMonitorFromReader(ctx, inputReader, usingWorkspace, resourceID)
+		id, err = service.ReplaceMonitorFromReader(ctx, inputReader, resourceID)
+	case resources.WorkspaceType:
+		id, err = service.ReplaceWorkspaceFromReader(ctx, inputReader, resourceID)
 	case resources.APIType:
-		id, err = service.ReplaceAPIFromReader(ctx, inputReader, usingWorkspace, resourceID)
+		id, err = service.ReplaceAPIFromReader(ctx, inputReader, resourceID)
 	case resources.APIVersionType:
-		id, err = service.ReplaceAPIVersionFromReader(ctx, inputReader, usingWorkspace, forAPI, resourceID)
+		id, err = service.ReplaceAPIVersionFromReader(ctx, inputReader, forAPI, resourceID)
 	case resources.SchemaType:
-		id, err = service.ReplaceSchemaFromReader(ctx, inputReader, usingWorkspace, forAPI, forAPIVersion, resourceID)
+		id, err = service.ReplaceSchemaFromReader(ctx, inputReader, forAPI, forAPIVersion, resourceID)
 	}
 
 	if err != nil {

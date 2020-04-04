@@ -110,6 +110,8 @@ func createResource(t resources.ResourceType) error {
 		id, err = service.CreateMockFromReader(ctx, inputReader, usingWorkspace)
 	case resources.MonitorType:
 		id, err = service.CreateMonitorFromReader(ctx, inputReader, usingWorkspace)
+	case resources.WorkspaceType:
+		id, err = service.CreateWorkspaceFromReader(ctx, inputReader, usingWorkspace)
 	case resources.APIType:
 		id, err = service.CreateAPIFromReader(ctx, inputReader, usingWorkspace)
 	case resources.APIVersionType:
