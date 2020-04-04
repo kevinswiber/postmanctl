@@ -1,10 +1,10 @@
 generate:
 	go generate ./...
 
-build: generate
+build:
 	go build -o ./output/postmanctl ./cmd/postmanctl
 
-install: generate
+install:
 	go install ./cmd/postmanctl
 
 doc:

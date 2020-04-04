@@ -17,7 +17,10 @@ limitations under the License.
 package cmd
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -26,9 +29,29 @@ func init() {
 	var cmd = &cobra.Command{
 		Use:   "run",
 		Short: "Execute runnable Postman resources.",
+	}
+
+	var runMonitorCmd = &cobra.Command{
+		Use:     "monitor",
+		Aliases: []string{"mon"},
+		Args:    cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("run called")
+			msg, err := service.RunMonitor(context.Background(), args[0])
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(1)
+			}
+
+			b, err := json.MarshalIndent(&msg, "", "  ")
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(1)
+			}
+
+			fmt.Println(string(b))
 		},
 	}
+
+	cmd.AddCommand(runMonitorCmd)
 	rootCmd.AddCommand(cmd)
 }

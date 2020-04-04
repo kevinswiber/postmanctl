@@ -12,32 +12,32 @@ import (
 type Auth struct {
 
   // The attributes for API Key Authentication.
-  Apikey []*AuthAttribute `json:"apikey,omitempty"`
+  Apikey []*Auth `json:"apikey,omitempty"`
 
   // The attributes for [AWS Auth](http://docs.aws.amazon.com/AmazonS3/latest/dev/RESTAuthentication.html).
-  Awsv4 []*AuthAttribute `json:"awsv4,omitempty"`
+  Awsv4 []*Auth `json:"awsv4,omitempty"`
 
   // The attributes for [Basic Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication).
-  Basic []*AuthAttribute `json:"basic,omitempty"`
+  Basic []*Auth `json:"basic,omitempty"`
 
   // The helper attributes for [Bearer Token Authentication](https://tools.ietf.org/html/rfc6750)
-  Bearer []*AuthAttribute `json:"bearer,omitempty"`
+  Bearer []*Auth `json:"bearer,omitempty"`
 
   // The attributes for [Digest Authentication](https://en.wikipedia.org/wiki/Digest_access_authentication).
-  Digest []*AuthAttribute `json:"digest,omitempty"`
+  Digest []*Auth `json:"digest,omitempty"`
 
   // The attributes for [Hawk Authentication](https://github.com/hueniverse/hawk)
-  Hawk []*AuthAttribute `json:"hawk,omitempty"`
+  Hawk []*Auth `json:"hawk,omitempty"`
   Noauth interface{} `json:"noauth,omitempty"`
 
   // The attributes for [NTLM Authentication](https://msdn.microsoft.com/en-us/library/cc237488.aspx)
-  Ntlm []*AuthAttribute `json:"ntlm,omitempty"`
+  Ntlm []*Auth `json:"ntlm,omitempty"`
 
   // The attributes for [OAuth2](https://oauth.net/1/)
-  Oauth1 []*AuthAttribute `json:"oauth1,omitempty"`
+  Oauth1 []*Auth `json:"oauth1,omitempty"`
 
   // Helper attributes for [OAuth2](https://oauth.net/2/)
-  Oauth2 []*AuthAttribute `json:"oauth2,omitempty"`
+  Oauth2 []*Auth `json:"oauth2,omitempty"`
   Type string `json:"type"`
 }
 
