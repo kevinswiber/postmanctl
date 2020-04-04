@@ -34,20 +34,22 @@ type RequestError struct {
 	StatusCode int
 	Name       string
 	Message    string
+	Details    map[string]interface{}
 }
 
 // NewRequestError creates a new RequestError for Postman API responses.
-func NewRequestError(code int, name string, message string) *RequestError {
+func NewRequestError(code int, name string, message string, details map[string]interface{}) *RequestError {
 	return &RequestError{
 		StatusCode: code,
 		Name:       name,
 		Message:    message,
+		Details:    details,
 	}
 }
 
 func (e *RequestError) Error() string {
-	return fmt.Sprintf("status code: %d, name: %s, message: %s", e.StatusCode,
-		e.Name, e.Message)
+	return fmt.Sprintf("status code: %d, name: %s, message: %s, details %s", e.StatusCode,
+		e.Name, e.Message, e.Details)
 }
 
 // Request holds state for a Postman API request.
@@ -138,6 +140,12 @@ func (r *Request) Put() *Request {
 	return r
 }
 
+// Delete sets the HTTP method to DELETE
+func (r *Request) Delete() *Request {
+	r.method = "DELETE"
+	return r
+}
+
 // Path sets the path of the HTTP request.
 func (r *Request) Path(p ...string) *Request {
 	r.path = path.Join(p...)
@@ -201,7 +209,7 @@ func (r *Request) Do() (*http.Response, error) {
 
 		var e resources.ErrorResponse
 		json.Unmarshal(body, &e)
-		errorMessage := NewRequestError(resp.StatusCode, e.Error.Name, e.Error.Message)
+		errorMessage := NewRequestError(resp.StatusCode, e.Error.Name, e.Error.Message, e.Error.Details)
 		r.err = errorMessage
 		return nil, errorMessage
 	}

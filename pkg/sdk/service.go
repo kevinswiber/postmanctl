@@ -74,7 +74,7 @@ func (s *Service) put(ctx context.Context, input []byte, output interface{}, pat
 
 func (s *Service) delete(ctx context.Context, output interface{}, path ...string) (*http.Response, error) {
 	req := client.NewRequestWithContext(ctx, s.Options)
-	res, err := req.Put().
+	res, err := req.Delete().
 		Path(path...).
 		AddHeader("Content-Type", "application/json").
 		Into(&output).

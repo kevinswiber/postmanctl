@@ -16,7 +16,9 @@ limitations under the License.
 
 package resources
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // ErrorResponse is the struct representation of a Postman API error.
 type ErrorResponse struct {
@@ -25,8 +27,9 @@ type ErrorResponse struct {
 
 // Error is a struct representation of error details from a Postman API error.
 type Error struct {
-	Name    string `json:"name"`
-	Message string `json:"message"`
+	Name    string                 `json:"name"`
+	Message string                 `json:"message"`
+	Details map[string]interface{} `json:"details"`
 }
 
 func (e *Error) String() string {
