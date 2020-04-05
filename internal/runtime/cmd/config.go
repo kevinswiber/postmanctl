@@ -42,6 +42,7 @@ func init() {
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Print("Postman API Key: ")
 			apiKey, err := terminal.ReadPassword(int(os.Stdin.Fd()))
+			fmt.Printf("\n")
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "error: %s\n", err)
 				os.Exit(1)
