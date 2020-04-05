@@ -40,18 +40,9 @@ func init() {
 		Short: "Create a context for accessing the Postman API.",
 		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			fd := int(os.Stdin.Fd())
-			state, err := terminal.MakeRaw(fd)
-
+			fmt.Print("Enter API Key: ")
+			apiKey, err := terminal.ReadPassword(int(os.Stdin.Fd()))
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "error: %s\n", err)
-				os.Exit(1)
-			}
-
-			t := terminal.NewTerminal(os.Stdin, "")
-
-			apiKey, err := t.ReadPassword("Enter API Key: ")
-			if err = terminal.Restore(fd, state); err != nil {
 				fmt.Fprintf(os.Stderr, "error: %s\n", err)
 				os.Exit(1)
 			}
@@ -73,7 +64,7 @@ func init() {
 				newContext.APIRoot = setContextAPIRoot
 			}
 
-			newContext.APIKey = apiKey
+			newContext.APIKey = string(apiKey)
 
 			cfg.Contexts[args[0]] = newContext
 			cfg.CurrentContext = args[0]

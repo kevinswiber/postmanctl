@@ -73,6 +73,8 @@ var rootCmd = &cobra.Command{
 				fmt.Fprintln(os.Stderr, "error: context is not set, run: postmanctl config use-context --help")
 			} else if !configContextFound {
 				fmt.Fprintf(os.Stderr, "error: context '%s' is not configured, run: postmanctl config set-context --help\n", cfg.CurrentContext)
+			} else if !configFileFound {
+				fmt.Fprintln(os.Stderr, "error: config file not found at $HOME/.postmanctl.yaml, run: postmanctl config set-context --help")
 			}
 
 			os.Exit(1)
@@ -124,7 +126,6 @@ func initConfig() {
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			fmt.Fprintln(os.Stderr, "error: config file not found at $HOME/.postmanctl.yaml")
 			configFileFound = false
 		} else {
 			fmt.Fprintf(os.Stderr, "error: %s\n", err)
