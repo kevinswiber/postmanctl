@@ -38,13 +38,13 @@ func init() {
 		Run: func(cmd *cobra.Command, args []string) {
 			msg, err := service.RunMonitor(context.Background(), args[0])
 			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
+				fmt.Fprintf(os.Stderr, "error: %s\n", err)
 				os.Exit(1)
 			}
 
 			b, err := json.MarshalIndent(&msg, "", "  ")
 			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
+				fmt.Fprintf(os.Stderr, "error: %s\n", err)
 				os.Exit(1)
 			}
 

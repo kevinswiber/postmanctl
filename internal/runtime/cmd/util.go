@@ -47,27 +47,27 @@ func printGetOutput(r interface{}) {
 	if outputFormat.value == "json" {
 		t, err := json.MarshalIndent(&r, "", "  ")
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err)
+			fmt.Fprintf(os.Stderr, "error: %s\n", err)
 		}
 		fmt.Println(string(t))
 	} else if strings.HasPrefix(outputFormat.value, "jsonpath=") {
 		tmpl := outputFormat.value[9:]
 		j := jsonpath.New("out")
 		if err := j.Parse(tmpl); err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err)
+			fmt.Fprintf(os.Stderr, "error: %s\n", err)
 			os.Exit(1)
 		}
 
 		t, err := json.Marshal(&r)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err)
+			fmt.Fprintf(os.Stderr, "error: %s\n", err)
 			os.Exit(1)
 		}
 
 		var queryObj interface{}
 		queryObj = map[string]interface{}{}
 		if err := json.Unmarshal(t, &queryObj); err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err)
+			fmt.Fprintf(os.Stderr, "error: %s\n", err)
 			os.Exit(1)
 		}
 

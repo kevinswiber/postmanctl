@@ -37,7 +37,7 @@ func init() {
 		Run: func(cmd *cobra.Command, args []string) {
 			id, err := service.MergeCollection(context.Background(), args[0], mergeCollection, mergeStrategy)
 			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
+				fmt.Fprintf(os.Stderr, "error: %s\n", err)
 				os.Exit(1)
 			}
 

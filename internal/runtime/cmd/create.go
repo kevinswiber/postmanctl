@@ -121,7 +121,7 @@ func createResource(t resources.ResourceType) error {
 	}
 
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintf(os.Stderr, "error: %s\n", err)
 		os.Exit(1)
 	}
 

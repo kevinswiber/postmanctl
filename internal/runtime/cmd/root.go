@@ -50,9 +50,34 @@ var (
 	mergeCollection string
 )
 
+var configContextFound = true
+var configFileFound = true
+var configContextSet = true
+
 var rootCmd = &cobra.Command{
 	Use:   "postmanctl",
 	Short: "Controls the Postman API",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		if !configFileFound || !configContextFound {
+			processArgs := os.Args
+			if len(processArgs) > 2 {
+				command := processArgs[1]
+				subcommand := processArgs[2]
+
+				if command == "config" && subcommand != "current-context" {
+					return
+				}
+			}
+
+			if !configContextSet {
+				fmt.Fprintln(os.Stderr, "error: context is not set, run: postmanctl config use-context --help")
+			} else if !configContextFound {
+				fmt.Fprintf(os.Stderr, "error: context '%s' is not configured, run: postmanctl config set-context --help\n", cfg.CurrentContext)
+			}
+
+			os.Exit(1)
+		}
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -99,17 +124,22 @@ func initConfig() {
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			fmt.Fprintf(os.Stderr, "config file not found at $HOME/.postmanctl.yaml\n")
+			fmt.Fprintln(os.Stderr, "error: config file not found at $HOME/.postmanctl.yaml")
+			configFileFound = false
 		} else {
-			fmt.Fprintf(os.Stderr, "%s\n", err)
+			fmt.Fprintf(os.Stderr, "error: %s\n", err)
+			os.Exit(1)
 		}
-		os.Exit(1)
 	}
 
 	cfg = &config.Config{}
 	if err := viper.Unmarshal(cfg); err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
+		fmt.Fprintf(os.Stderr, "error: %s\n", err)
 		os.Exit(1)
+	}
+
+	if !configFileFound {
+		return
 	}
 
 	// viper keys are case-insensitive
@@ -119,15 +149,20 @@ func initConfig() {
 			configContext.APIRoot = "https://api.postman.com"
 		}
 	} else {
-		fmt.Fprintf(os.Stderr, "context is not configured, %s\n", cfg.CurrentContext)
-		os.Exit(1)
+		context := cfg.CurrentContext
+		configContextFound = false
+
+		if context == "" {
+			configContextSet = false
+			return
+		}
 	}
 }
 
 func initAPIClientConfig() {
 	u, err := url.Parse(configContext.APIRoot)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
+		fmt.Fprintf(os.Stderr, "error: %s\n", err)
 		os.Exit(1)
 	}
 

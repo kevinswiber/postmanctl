@@ -120,7 +120,7 @@ func replaceResource(t resources.ResourceType, resourceID string) error {
 	}
 
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintf(os.Stderr, "error: %s\n", err)
 		os.Exit(1)
 	}
 

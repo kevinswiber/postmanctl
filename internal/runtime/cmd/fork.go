@@ -37,7 +37,7 @@ func init() {
 		Run: func(cmd *cobra.Command, args []string) {
 			id, err := service.ForkCollection(context.Background(), args[0], usingWorkspace, forkLabel)
 			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
+				fmt.Fprintf(os.Stderr, "error: %s\n", err)
 				os.Exit(1)
 			}
 
