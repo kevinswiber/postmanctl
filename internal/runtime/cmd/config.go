@@ -40,7 +40,7 @@ func init() {
 		Short: "Create a context for accessing the Postman API.",
 		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Print("Enter API Key: ")
+			fmt.Print("Postman API Key: ")
 			apiKey, err := terminal.ReadPassword(int(os.Stdin.Fd()))
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "error: %s\n", err)
