@@ -1,6 +1,6 @@
 # postmanctl
 
-A command-line interface to the [Postman API](docs.api.getpostman.com/).
+A command-line interface to the [Postman API](https://docs.api.getpostman.com/).
 
 ## Usage
 
