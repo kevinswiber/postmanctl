@@ -145,7 +145,7 @@ func mergeConfig(cfg *config.Config) {
 
 	if err := viper.WriteConfig(); err != nil {
 		if err != nil {
-			switch t := err.(type) {
+			switch err.(type) {
 			case viper.ConfigFileNotFoundError:
 				if err := viper.SafeWriteConfig(); err != nil {
 					fmt.Fprintf(os.Stderr, "error: %s\n", err)
