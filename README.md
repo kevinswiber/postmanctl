@@ -34,7 +34,7 @@ Use "postmanctl [command] --help" for more information about a command.
 Currently, `postmanctl` can be installed via `go get`:
 
 ```
-$ go get -u github.com/kevinswiber/postmanctl
+$ go get -u github.com/kevinswiber/postmanctl/cmd/postmanctl
 ```
 
 ## Getting started
