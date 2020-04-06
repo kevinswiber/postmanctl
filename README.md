@@ -33,10 +33,30 @@ Use "postmanctl [command] --help" for more information about a command.
 
 ## Install
 
-Currently, `postmanctl` can be installed via `go get`:
+### Download binary
+
+Binaries for Windows, MacOS, and Linux can be downloaded from the GitHub releases page: https://github.com/kevinswiber/postmanctl/releases.
+
+### Homebrew
+
+Homebrew users can install `postmanctl` from the `kevinswiber/postmanctl` tap:
+
+```
+$ brew install kevinswiber/postmanctl/postmanctl
+```
+
+### Using `go get`
 
 ```
 $ go get -u github.com/kevinswiber/postmanctl/cmd/postmanctl
+```
+
+### From source:
+
+Download and install from source.
+
+```
+$ git clone https://github.com/kevinswiber/postmanctl.git && make install
 ```
 
 ## Getting started
