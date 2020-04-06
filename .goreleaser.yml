@@ -6,6 +6,20 @@ builds:
 - env:
   - CGO_ENABLED=0
   main: ./cmd/postmanctl/main.go
+  goos:
+    - linux
+    - windows
+    - darwin
+brews:
+  - name: postmanctl
+    github:
+      owner: kevinswiber
+      name: homebrew-postmanctl
+    commit_author:
+      name: Kevin Swiber
+      email: kswiber@gmail.com
+    folder: Formula
+    homepage: https://github.com/kevinswiber/postmanctl
 archives:
 - replacements:
     darwin: Darwin
