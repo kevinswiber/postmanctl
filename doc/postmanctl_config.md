@@ -22,6 +22,7 @@ Configure access to the Postman API.
 
 * [postmanctl](postmanctl.md)	 - Controls the Postman API
 * [postmanctl config current-context](postmanctl_config_current-context.md)	 - Get the currently set context for postmanctl commands.
+* [postmanctl config get-contexts](postmanctl_config_get-contexts.md)	 - Shows the list of configured contexts.
 * [postmanctl config set-context](postmanctl_config_set-context.md)	 - Create a context for accessing the Postman API.
 * [postmanctl config use-context](postmanctl_config_use-context.md)	 - Use an existing context for postmanctl commands.
 
