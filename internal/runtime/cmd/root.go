@@ -35,19 +35,20 @@ import (
 )
 
 var (
-	cfgFile         string
-	cfg             *config.Config
-	configContext   config.Context
-	options         *client.Options
-	service         *sdk.Service
-	forAPI          string
-	forAPIVersion   string
-	inputFile       string
-	inputReader     io.Reader
-	usingWorkspace  string
-	forkLabel       string
-	mergeStrategy   string
-	mergeCollection string
+	cfgFile          string
+	cfg              *config.Config
+	configContext    config.Context
+	configContextKey string
+	options          *client.Options
+	service          *sdk.Service
+	forAPI           string
+	forAPIVersion    string
+	inputFile        string
+	inputReader      io.Reader
+	usingWorkspace   string
+	forkLabel        string
+	mergeStrategy    string
+	mergeCollection  string
 )
 
 var configContextFound = true
@@ -72,7 +73,7 @@ var rootCmd = &cobra.Command{
 			if !configContextSet {
 				fmt.Fprintln(os.Stderr, "error: context is not set, run: postmanctl config use-context --help")
 			} else if !configContextFound {
-				fmt.Fprintf(os.Stderr, "error: context '%s' is not configured, run: postmanctl config set-context --help\n", cfg.CurrentContext)
+				fmt.Fprintf(os.Stderr, "error: context '%s' is not configured, run: postmanctl config set-context --help\n", configContextKey)
 			} else if !configFileFound {
 				fmt.Fprintln(os.Stderr, "error: config file not found at $HOME/.postmanctl.yaml, run: postmanctl config set-context --help")
 			}
@@ -100,6 +101,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 	cobra.OnInitialize(initAPIClientConfig)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.postmanctl.yaml)")
+	rootCmd.PersistentFlags().StringVar(&configContextKey, "context", "", "context to use, overrides the current context in the config file")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -143,8 +145,12 @@ func initConfig() {
 		return
 	}
 
+	if configContextKey == "" {
+		configContextKey = cfg.CurrentContext
+	}
+
 	// viper keys are case-insensitive
-	if val, ok := cfg.Contexts[strings.ToLower(cfg.CurrentContext)]; ok {
+	if val, ok := cfg.Contexts[strings.ToLower(configContextKey)]; ok {
 		configContext = val
 		if len(configContext.APIRoot) == 0 {
 			configContext.APIRoot = "https://api.postman.com"
