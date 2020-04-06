@@ -21,6 +21,7 @@ import (
 	"os"
 
 	"github.com/kevinswiber/postmanctl/internal/runtime/config"
+	"github.com/kevinswiber/postmanctl/pkg/sdk/printers"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -101,7 +102,26 @@ func init() {
 		},
 	}
 
-	cmd.AddCommand(setContextCmd, useContextCmd, currentContextCmd)
+	getContextsCmd := &cobra.Command{
+		Use:   "get-contexts",
+		Short: "Shows the list of configured contexts.",
+		Run: func(cmd *cobra.Command, args []string) {
+			w := printers.GetNewTabWriter(os.Stdout)
+			fmt.Fprintln(w, "CURRENT\tNAME\tAPIROOT")
+			for k, v := range cfg.Contexts {
+				cur := ""
+				if k == cfg.CurrentContext {
+					cur = "*"
+				}
+
+				fmt.Fprintf(w, "%s\t%s\t%s\n", cur, k, v.APIRoot)
+			}
+
+			w.Flush()
+		},
+	}
+
+	cmd.AddCommand(setContextCmd, useContextCmd, currentContextCmd, getContextsCmd)
 	rootCmd.AddCommand(cmd)
 }
 

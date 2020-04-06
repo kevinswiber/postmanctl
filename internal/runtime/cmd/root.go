@@ -64,7 +64,7 @@ var rootCmd = &cobra.Command{
 				command := processArgs[1]
 				subcommand := processArgs[2]
 
-				if command == "config" && subcommand != "current-context" {
+				if command == "config" && subcommand != "current-context" && subcommand != "get-contexts" {
 					return
 				}
 			}
