@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"sort"
 	"strings"
 	"text/tabwriter"
 
@@ -587,6 +588,7 @@ func writeCollectionItemOrItemGroup(out io.Writer, c resources.ItemTreeNode, pri
 
 			metaString := ""
 			if len(evs) > 0 {
+				sort.Strings(evs)
 				metaString += fmt.Sprintf(" (scripts: %s)", strings.Join(evs, ","))
 			}
 			printBranch.AddNode(it.Name + metaString)
