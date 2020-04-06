@@ -69,7 +69,7 @@ To start using `postmanctl`, configure access to your Postman account.
 $ postmanctl config set-context <context-name>
 ```
 
-You'll need a Postman API Key to add to your configuration, which can be generated here: https://the.postman.co/settings/me/api-keys.
+You'll need a Postman API Key to add to your configuration, which can be generated here: https://go.postman.co/settings/me/api-keys.
 
 Example:
 
