@@ -20,9 +20,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
 
+	"github.com/aymerick/raymond"
 	"github.com/kevinswiber/postmanctl/pkg/sdk/client"
 	"github.com/kevinswiber/postmanctl/pkg/sdk/printers"
 	"github.com/kevinswiber/postmanctl/pkg/sdk/resources"
@@ -75,6 +77,41 @@ func printGetOutput(r interface{}) {
 		j.Execute(buf, queryObj)
 
 		fmt.Println(buf)
+	} else if strings.HasPrefix(outputFormat.value, "handlebars-file=") {
+		templateFile := outputFormat.value[16:]
+		tmpl, err := ioutil.ReadFile(templateFile)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error: %s\n", err)
+			os.Exit(1)
+		}
+
+		h, err := raymond.Parse(string(tmpl))
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error: %s\n", err)
+			os.Exit(1)
+		}
+
+		t, err := json.Marshal(&r)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error: %s\n", err)
+			os.Exit(1)
+		}
+
+		var queryObj interface{}
+		queryObj = map[string]interface{}{}
+		if err := json.Unmarshal(t, &queryObj); err != nil {
+			fmt.Fprintf(os.Stderr, "error: %s\n", err)
+			os.Exit(1)
+		}
+
+		result, err := h.Exec(queryObj)
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error: %s\n", err)
+			os.Exit(1)
+		}
+
+		fmt.Println(result)
 	} else {
 		var f resources.Formatter
 		f = r.(resources.Formatter)

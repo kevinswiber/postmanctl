@@ -3,6 +3,7 @@ module github.com/kevinswiber/postmanctl
 go 1.14
 
 require (
+	github.com/aymerick/raymond v2.0.2+incompatible
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/mapstructure v1.1.2

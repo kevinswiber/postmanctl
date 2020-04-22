@@ -40,12 +40,12 @@ func (o *OutputFormatValue) String() string {
 
 // Set creates the flag value.
 func (o *OutputFormatValue) Set(v string) error {
-	if v == "json" || strings.HasPrefix(v, "jsonpath=") {
+	if v == "json" || strings.HasPrefix(v, "jsonpath=") || strings.HasPrefix(v, "handlebars-file=") {
 		o.value = v
 		return nil
 	}
 
-	return errors.New("output format must be json or jsonpath")
+	return errors.New("output format must be json, jsonpath, or handlebars-file")
 }
 
 // Type returns the type of this value.
@@ -140,7 +140,7 @@ func init() {
 		schemaCmd,
 	)
 
-	getCmd.PersistentFlags().VarP(&outputFormat, "output", "o", "output format (json, jsonpath)")
+	getCmd.PersistentFlags().VarP(&outputFormat, "output", "o", "output format (json, jsonpath, handelbars-file)")
 	rootCmd.AddCommand(getCmd)
 }
 
