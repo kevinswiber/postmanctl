@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+{{range $co := . -}}
+<jmeterTestPlan version="1.2" properties="4.0" jmeter="4.0">
+  <org.apache.jorphan.collections.HashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="{{$co.info.name}}" enabled="true">
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <stringProp name="TestPlan.comments"></stringProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+    </TestPlan>
+    <org.apache.jorphan.collections.HashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Http URL/API Test" enabled="true">
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">5</intProp>
+        </elementProp>
+        <intProp name="ThreadGroup.num_threads">1</intProp>
+        <intProp name="ThreadGroup.ramp_time">1</intProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <longProp name="ThreadGroup.duration">0</longProp>
+        <longProp name="ThreadGroup.delay">0</longProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+      </ThreadGroup>
+      <org.apache.jorphan.collections.HashTree>
+{{template "folder" $co -}}
+      </org.apache.jorphan.collections.HashTree>
+    </org.apache.jorphan.collections.HashTree>
+  </org.apache.jorphan.collections.HashTree>
+</jmeterTestPlan>
+{{- end -}}
+
+{{define "folder" -}}
+  {{if (hasKey . "item") -}}
+    {{range $it := .item -}}
+      {{template "folder" $it -}}
+    {{end -}}
+  {{else -}}
+    {{template "item" . -}}
+  {{end -}}
+{{end -}}
+
+{{define "item" -}}
+{{ $indentDepth := 4 -}}
+{{repeat $indentDepth "  "}}<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="{{.name}}" enabled="true">
+{{repeat $indentDepth "  "}}  <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+{{repeat $indentDepth "  "}}    <collectionProp name="Arguments.arguments"/>
+{{repeat $indentDepth "  "}}  </elementProp>
+{{repeat $indentDepth "  "}}  <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+{{repeat $indentDepth "  "}}  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+{{repeat $indentDepth "  "}}  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+{{repeat $indentDepth "  "}}  <boolProp name="HTTPSampler.monitor">false</boolProp>
+{{repeat $indentDepth "  "}}  <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+{{repeat $indentDepth "  "}}  <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+{{repeat $indentDepth "  "}}  <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+{{repeat $indentDepth "  "}}  <stringProp name="HTTPSampler.method">{{.request.method}}</stringProp>
+{{repeat $indentDepth "  "}}  <stringProp name="HTTPSampler.domain">{{regexReplaceAll "{{(\\w+)}}" (.request.url.host | join ".") "${${1}}"}}</stringProp>
+{{repeat $indentDepth "  "}}  <stringProp name="HTTPSampler.path">/{{regexReplaceAll "{{(\\w+)}}" (.request.url.path | join "/") "${${1}}"}}</stringProp>
+{{repeat $indentDepth "  "}}  <stringProp name="HTTPSampler.protocol">{{coalesce .request.url.protocol "http"}}</stringProp>
+{{repeat $indentDepth "  "}}</HTTPSamplerProxy>
+{{repeat $indentDepth "  "}}<org.apache.jorphan.collections.HashTree>
+{{repeat $indentDepth "  "}}  <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="{{.name}}" enabled="true">
+{{repeat $indentDepth "  "}}    <collectionProp name="HeaderManager.headers"/>
+{{repeat $indentDepth "  "}}  </HeaderManager>
+{{repeat $indentDepth "  "}}  <org.apache.jorphan.collections.HashTree/>
+{{repeat $indentDepth "  "}}</org.apache.jorphan.collections.HashTree>
+{{end}}
