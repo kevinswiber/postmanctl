@@ -12,7 +12,16 @@ builds:
 brews:
   - name: postmanctl
     custom_block: |
-      head "https://github.com/kevinswiber/postmanctl.git"
+      head do
+        url "https://github.com/kevinswiber/postmanctl.git"
+        depends_on "go"
+      end
+    install: |
+      if head?
+        system "go", "build", "./cmd/postmanctl"
+      end
+
+      bin.install "postmanctl"
     github:
       owner: kevinswiber
       name: homebrew-postmanctl
