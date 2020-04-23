@@ -11,8 +11,8 @@ builds:
     - darwin
 brews:
   - name: postmanctl
-    custom_block:
-      head: https://github.com/kevinswiber/postmanctl.git
+    custom_block: |
+      head "https://github.com/kevinswiber/postmanctl.git"
     github:
       owner: kevinswiber
       name: homebrew-postmanctl
