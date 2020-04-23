@@ -45,8 +45,21 @@
 {{define "item" -}}
 {{ $indentDepth := 4 -}}
 {{repeat $indentDepth "  "}}<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="{{.name}}" enabled="true">
-{{repeat $indentDepth "  "}}  <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+{{repeat $indentDepth "  "}}  <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+{{ if (and (hasKey .request "body") (hasKey .request.body "raw")) -}}
+{{repeat $indentDepth "  "}}    <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+{{repeat $indentDepth "  "}}    <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+{{repeat $indentDepth "  "}}    <collectionProp name="Arguments.arguments">
+{{repeat $indentDepth "  "}}      <elementProp name="" elementType="HTTPArgument">
+{{repeat $indentDepth "  "}}        <boolProp name="HTTPArgument.always_encode">false</boolProp>
+{{repeat $indentDepth "  "}}        <stringProp name="Argument.value">{{(html .request.body.raw) | replace "\n" "&#xd;\n"}}</stringProp>
+{{repeat $indentDepth "  "}}        <stringProp name="Argument.metadata">=</stringProp>
+{{repeat $indentDepth "  "}}      </elementProp>
+{{repeat $indentDepth "  "}}    </collectionProp>
+{{repeat $indentDepth "  "}}  </elementProp>
+{{ else -}}
 {{repeat $indentDepth "  "}}    <collectionProp name="Arguments.arguments"/>
+{{ end -}}
 {{repeat $indentDepth "  "}}  </elementProp>
 {{repeat $indentDepth "  "}}  <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
 {{repeat $indentDepth "  "}}  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
@@ -60,10 +73,20 @@
 {{repeat $indentDepth "  "}}  <stringProp name="HTTPSampler.path">/{{regexReplaceAll "{{(\\w+)}}" (.request.url.path | join "/") "${${1}}"}}</stringProp>
 {{repeat $indentDepth "  "}}  <stringProp name="HTTPSampler.protocol">{{coalesce .request.url.protocol "http"}}</stringProp>
 {{repeat $indentDepth "  "}}</HTTPSamplerProxy>
-{{repeat $indentDepth "  "}}<org.apache.jorphan.collections.HashTree>
-{{repeat $indentDepth "  "}}  <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="{{.name}}" enabled="true">
-{{repeat $indentDepth "  "}}    <collectionProp name="HeaderManager.headers"/>
+{{if (len .request.header) -}}
+{{repeat $indentDepth "  "}}<hashTree>
+{{repeat $indentDepth "  "}}  <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+{{repeat $indentDepth "  "}}    <collectionProp name="HeaderManager.headers">
+{{range $header := .request.header -}}
+{{repeat $indentDepth "  "}}      <elementProp name="" elementType="Header">
+{{repeat $indentDepth "  "}}        <stringProp name="Header.name">{{$header.key}}</stringProp>
+{{repeat $indentDepth "  "}}        <stringProp name="Header.value">{{html (regexReplaceAll "{{(\\w+)}}" $header.value "${${1}}")}}</stringProp>
+{{repeat $indentDepth "  "}}      </elementProp>
+{{end -}}
+{{repeat $indentDepth "  "}}    </collectionProp>
 {{repeat $indentDepth "  "}}  </HeaderManager>
-{{repeat $indentDepth "  "}}  <org.apache.jorphan.collections.HashTree/>
-{{repeat $indentDepth "  "}}</org.apache.jorphan.collections.HashTree>
+{{repeat $indentDepth "  "}}</hashTree>
+{{else -}}
+{{repeat $indentDepth "  "}}<hashTree/>
+{{end -}}
 {{end}}
