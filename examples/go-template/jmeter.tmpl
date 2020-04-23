@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-{{range $co := . -}}
+{{range . -}}
 <jmeterTestPlan version="1.2" properties="5.0" jmeter="5.2.1">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="{{$co.info.name}}" enabled="true">
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Postman Collection Import" enabled="true">
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <stringProp name="TestPlan.comments"></stringProp>
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
@@ -12,7 +12,7 @@
       </elementProp>
     </TestPlan>
     <hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Http URL/API Test" enabled="true">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="{{.info.name}}" enabled="true">
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" enabled="true">
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <stringProp name="LoopController.loops">5</stringProp>
@@ -26,8 +26,24 @@
         <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
       </ThreadGroup>
       <hashTree>
-{{template "folder" $co -}}
-      </hashTree>
+{{template "folder" . -}}
+{{if hasKey . "variable" -}}
+{{if len .variable -}}
+{{"        "}}<Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+          <collectionProp name="Arguments.arguments">
+{{range .variable -}}
+{{"            "}}<elementProp name="{{.key}}" elementType="Argument">
+              <stringProp name="Argument.name">{{.key}}</stringProp>
+              <stringProp name="Argument.value">{{(html .value) | replace "\n" "&#xd;\n"}}</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+{{end -}}
+{{"          "}}</collectionProp>
+        </Arguments>
+        <hashTree/>
+{{end -}}
+{{end -}}
+{{- ""}}      </hashTree>
     </hashTree>
   </hashTree>
 </jmeterTestPlan>
@@ -35,8 +51,8 @@
 
 {{define "folder" -}}
   {{if (hasKey . "item") -}}
-    {{range $it := .item -}}
-      {{template "folder" $it -}}
+    {{range .item -}}
+      {{template "folder" . -}}
     {{end -}}
   {{else -}}
     {{template "item" . -}}
@@ -44,9 +60,11 @@
 {{end -}}
 
 {{define "item" -}}
-{{ $indentDepth := 4 -}}
+{{$indentDepth := 4 -}}
+{{$hasAdditionalHashTree := false -}}
 {{repeat $indentDepth "  "}}<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="{{.name}}" enabled="true">
-{{ if (and (hasKey .request "body") (hasKey .request.body "raw")) -}}
+{{if (hasKey .request "body") -}}
+{{if (hasKey .request.body "raw") -}}
 {{repeat $indentDepth "  "}}  <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
 {{repeat $indentDepth "  "}}  <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
 {{repeat $indentDepth "  "}}    <collectionProp name="Arguments.arguments">
@@ -57,7 +75,22 @@
 {{repeat $indentDepth "  "}}      </elementProp>
 {{repeat $indentDepth "  "}}    </collectionProp>
 {{repeat $indentDepth "  "}}  </elementProp>
-{{ else -}}
+{{else if (hasKey .request.body "urlencoded") -}}
+{{repeat $indentDepth "  "}}  <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+{{repeat $indentDepth "  "}}    <collectionProp name="Arguments.arguments">
+{{range .request.body.urlencoded -}}
+{{repeat $indentDepth "  "}}      <elementProp name="{{.key}}" elementType="HTTPArgument">
+{{repeat $indentDepth "  "}}        <boolProp name="HTTPArgument.always_encode">false</boolProp>
+{{repeat $indentDepth "  "}}        <stringProp name="Argument.value">{{html (regexReplaceAll "{{(\\w+)}}" .value "${${1}}")}}</stringProp>
+{{repeat $indentDepth "  "}}        <stringProp name="Argument.metadata">=</stringProp>
+{{repeat $indentDepth "  "}}        <boolProp name="HTTPArgument.use_equals">true</boolProp>
+{{repeat $indentDepth "  "}}        <stringProp name="Argument.name">{{.key}}</stringProp>
+{{repeat $indentDepth "  "}}      </elementProp>
+{{end -}}
+{{repeat $indentDepth "  "}}    </collectionProp>
+{{repeat $indentDepth "  "}}  </elementProp>
+{{end -}}
+{{else -}}
 {{repeat $indentDepth "  "}}  <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
 {{repeat $indentDepth "  "}}    <collectionProp name="Arguments.arguments"/>
 {{repeat $indentDepth "  "}}  </elementProp>
@@ -71,23 +104,47 @@
 {{repeat $indentDepth "  "}}  <stringProp name="HTTPSampler.contentEncoding"></stringProp>
 {{repeat $indentDepth "  "}}  <stringProp name="HTTPSampler.method">{{.request.method}}</stringProp>
 {{repeat $indentDepth "  "}}  <stringProp name="HTTPSampler.domain">{{regexReplaceAll "{{(\\w+)}}" (.request.url.host | join ".") "${${1}}"}}</stringProp>
-{{repeat $indentDepth "  "}}  <stringProp name="HTTPSampler.path">/{{regexReplaceAll "{{(\\w+)}}" (.request.url.path | join "/") "${${1}}"}}</stringProp>
+{{repeat $indentDepth "  "}}  <stringProp name="HTTPSampler.path">/{{regexReplaceAll "/:(\\w+)" (regexReplaceAll "{{(\\w+)}}" (.request.url.path | join "/") "${${1}}") "/${${1}}"}}</stringProp>
 {{repeat $indentDepth "  "}}  <stringProp name="HTTPSampler.protocol">{{coalesce .request.url.protocol "http"}}</stringProp>
 {{repeat $indentDepth "  "}}</HTTPSamplerProxy>
-{{if (len .request.header) -}}
+{{if hasKey .request "header" -}}
+{{if len .request.header -}}
+{{- $hasAdditionalHashTree = true -}}
 {{repeat $indentDepth "  "}}<hashTree>
 {{repeat $indentDepth "  "}}  <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
 {{repeat $indentDepth "  "}}    <collectionProp name="HeaderManager.headers">
-{{range $header := .request.header -}}
+{{range .request.header -}}
 {{repeat $indentDepth "  "}}      <elementProp name="" elementType="Header">
-{{repeat $indentDepth "  "}}        <stringProp name="Header.name">{{$header.key}}</stringProp>
-{{repeat $indentDepth "  "}}        <stringProp name="Header.value">{{html (regexReplaceAll "{{(\\w+)}}" $header.value "${${1}}")}}</stringProp>
+{{repeat $indentDepth "  "}}        <stringProp name="Header.name">{{.key}}</stringProp>
+{{repeat $indentDepth "  "}}        <stringProp name="Header.value">{{html (regexReplaceAll "{{(\\w+)}}" .value "${${1}}")}}</stringProp>
 {{repeat $indentDepth "  "}}      </elementProp>
 {{end -}}
 {{repeat $indentDepth "  "}}    </collectionProp>
 {{repeat $indentDepth "  "}}  </HeaderManager>
 {{repeat $indentDepth "  "}}</hashTree>
-{{else -}}
+{{end -}}
+{{end -}}
+{{if hasKey .request.url "variable" -}}
+{{if len .request.url.variable -}}
+{{- $hasAdditionalHashTree = true -}}
+{{repeat $indentDepth "  "}}<hashTree>
+{{repeat $indentDepth "  "}}  <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+{{repeat $indentDepth "  "}}    <collectionProp name="Arguments.arguments">
+{{range .request.url.variable -}}
+{{repeat $indentDepth "  "}}      <elementProp name="statusCode" elementType="Argument">
+{{repeat $indentDepth "  "}}        <stringProp name="Argument.name">{{.key}}</stringProp>
+{{repeat $indentDepth "  "}}        <stringProp name="Argument.value">{{html (regexReplaceAll "{{(\\w+)}}" (.value | join ",") "${${1}}")}}</stringProp>
+{{repeat $indentDepth "  "}}        <stringProp name="Argument.desc">{{html .description}}</stringProp>
+{{repeat $indentDepth "  "}}        <stringProp name="Argument.metadata">=</stringProp>
+{{repeat $indentDepth "  "}}      </elementProp>
+{{end -}}
+{{end -}}
+{{repeat $indentDepth "  "}}    </collectionProp>
+{{repeat $indentDepth "  "}}  </Arguments>
+{{repeat $indentDepth "  "}}  <hashTree/>
+{{repeat $indentDepth "  "}}</hashTree>
+{{end -}}
+{{if not $hasAdditionalHashTree -}}
 {{repeat $indentDepth "  "}}<hashTree/>
 {{end -}}
 {{end}}
