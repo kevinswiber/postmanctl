@@ -76,6 +76,6 @@ paths:
   {{$methodObj := get $path $methodKey -}}
   {{$_ := set $methodObj "tags" (list ._folder) -}}
   {{$_ := set $methodObj "summary" ._current.name -}}
-  {{$_ := set $methodObj "operationId" (print $methodKey (nospace (title ._current.name))) -}}{{/*replace non-friendly chars*/ -}}
+  {{$_ := set $methodObj "operationId" (print $methodKey (regexReplaceAll "\\W" (nospace (title ._current.name)) "-")) -}}
   {{if ._current.request.description}}{{$_ := set $methodObj "description" ._current.request.description}}{{end -}}
 {{end -}}
