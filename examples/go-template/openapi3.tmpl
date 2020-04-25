@@ -1,0 +1,81 @@
+{{range . -}}
+
+{{$_ := set . "_servers" list -}}
+{{$_ := set . "_tags" dict -}}
+{{$_ := set . "_paths" dict -}}
+{{$_ := set . "_components" dict -}}
+{{$_ := set . "_current" . -}}
+
+{{template "folder" . -}}
+---
+openapi: "3.0"
+info:
+{{if len ._servers -}}
+servers:
+{{range (._servers | uniq) -}}
+{{""}}  - {{.}}
+{{end -}}
+{{end -}}
+
+{{if len ._tags -}}
+tags:
+{{range $tagName, $tagDesc := ._tags -}}
+{{""}}  - name: {{toJson $tagName}}
+{{if $tagDesc}}    description: |
+      {{trim (replace "\n" "\n      " $tagDesc)}}{{"\n"}}{{end -}}
+{{end -}}
+{{end -}}
+
+paths:
+{{range $pathKey, $methodMap := ._paths -}}
+{{""}}  "{{$pathKey}}":
+{{range $methodKey, $methodObj := $methodMap -}}
+{{""}}    {{$methodKey}}:
+      operationId: {{$methodObj.operationId | toJson}}
+{{if $methodObj.summary}}      summary: {{trim $methodObj.summary | toJson}}{{"\n"}}{{end -}}
+{{if $methodObj.description}}      description: |
+        {{trim (replace "\n" "\n        " $methodObj.description)}}{{"\n"}}{{end -}}
+{{range $methodObj.tags -}}
+{{""}}      tags:
+        - {{toJson .}}
+{{end -}}
+{{end -}}
+{{end -}}
+
+{{end -}}
+
+{{- define "folder" -}}
+  {{$global := . -}}
+  {{if (and ._current.name (hasKey $global._current "item")) -}}
+    {{$_ := set $global "_folder" $global._current.name -}}
+    {{if not (hasKey $global._tags ._current.name) -}}
+      {{$_ := set $global._tags ._current.name $global._current.description -}}
+    {{end -}}
+  {{end -}}
+  {{if (hasKey $global._current "item") -}}
+    {{range $item := $global._current.item -}}
+      {{$_ := set $global "_current" $item -}}
+      {{template "folder" $global -}}
+    {{end -}}
+  {{else -}}
+    {{template "item" $global -}}
+  {{end -}}
+{{end -}}
+
+{{- define "item" -}}
+  {{$_ := set . "_servers" (append ._servers (print (coalesce ._current.protocol "http") "://" (join "." ._current.request.url.host))) -}}
+  {{$pathKey := (print "/" (._current.request.url.path | join "/")) -}}
+  {{if not (hasKey ._paths $pathKey) -}}
+    {{$_ := set ._paths $pathKey dict -}}
+  {{end -}}
+  {{$path := (get ._paths $pathKey) -}}
+  {{$methodKey := lower ._current.request.method -}}
+  {{if not (hasKey $path $methodKey) -}}
+    {{$_ := set $path $methodKey dict -}}
+  {{end -}}
+  {{$methodObj := get $path $methodKey -}}
+  {{$_ := set $methodObj "tags" (list ._folder) -}}
+  {{$_ := set $methodObj "summary" ._current.name -}}
+  {{$_ := set $methodObj "operationId" (print $methodKey (nospace (title ._current.name))) -}}{{/*replace non-friendly chars*/ -}}
+  {{if ._current.request.description}}{{$_ := set $methodObj "description" ._current.request.description}}{{end -}}
+{{end -}}
