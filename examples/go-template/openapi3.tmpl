@@ -10,12 +10,19 @@
 
 {{template "folder" . -}}
 ---
-openapi: "3.0"
+openapi: "3.0.3"
 info:
+  title: {{.info.name}}
+  # TODO: update contact info.
+  contact:
+    name: "API Authors"
+{{if .info.description}}  description: |
+      {{trim (replace "\n" "\n      " .info.description)}}{{"\n"}}{{end -}}
+{{""}}  version: "1.0.0"
 {{if len ._servers -}}
 servers:
 {{range (._servers | uniq) -}}
-{{""}}  - {{.}}
+{{""}}  - url: {{.}}
 {{end -}}
 {{end -}}
 
@@ -36,17 +43,19 @@ paths:
 {{""}}    {{$methodKey}}:
       operationId: {{$methodObj.operationId | toJson}}
 {{if $methodObj.summary}}      summary: {{trim $methodObj.summary | toJson}}{{"\n"}}{{end -}}
-{{if $methodObj.description}}      description: |
-        {{trim (replace "\n" "\n        " $methodObj.description)}}{{"\n"}}{{end -}}
+{{""}}      description: |
+        {{trim (replace "\n" "\n        " (coalesce $methodObj.description "TODO: add description"))}}
 {{if $methodObj.tags}}      tags:{{"\n"}}{{end -}}
 {{range $methodObj.tags -}}
 {{""}}        - {{toJson .}}
 {{end -}}
+{{""}}      responses:
+        "200":
+          description: Default Response
 {{end -}}
 {{end -}}
 
-{{end -}}
-
+{{- end -}}
 {{- define "folder" -}}
   {{$global := . -}}
   {{if (and ._current.name (hasKey $global._current "item")) -}}
@@ -75,8 +84,7 @@ paths:
     {{template "item" $global -}}
   {{end -}}
 {{end -}}
-
-{{- define "item" -}}
+{{define "item" -}}
   {{$_ := set . "_servers" (append ._servers (print (coalesce ._current.protocol "http") "://" (join "." ._current.request.url.host))) -}}
   {{$pathKey := (print "/" (._current.request.url.path | join "/")) -}}
   {{if not (hasKey ._paths $pathKey) -}}
