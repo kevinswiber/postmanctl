@@ -4,6 +4,8 @@
 {{$_ := set . "_tags" dict -}}
 {{$_ := set . "_paths" dict -}}
 {{$_ := set . "_components" dict -}}
+{{$_ := set . "_depth" 0 -}}
+{{$_ := set . "_currentTag" list -}}
 {{$_ := set . "_current" . -}}
 
 {{template "folder" . -}}
@@ -19,7 +21,8 @@ servers:
 
 {{if len ._tags -}}
 tags:
-{{range $tagName, $tagDesc := ._tags -}}
+{{range $tagName, $tagObj := ._tags -}}
+{{$tagDesc := get $tagObj "description" -}}
 {{""}}  - name: {{toJson $tagName}}
 {{if $tagDesc}}    description: |
       {{trim (replace "\n" "\n      " $tagDesc)}}{{"\n"}}{{end -}}
@@ -35,9 +38,9 @@ paths:
 {{if $methodObj.summary}}      summary: {{trim $methodObj.summary | toJson}}{{"\n"}}{{end -}}
 {{if $methodObj.description}}      description: |
         {{trim (replace "\n" "\n        " $methodObj.description)}}{{"\n"}}{{end -}}
+{{if $methodObj.tags}}      tags:{{"\n"}}{{end -}}
 {{range $methodObj.tags -}}
-{{""}}      tags:
-        - {{toJson .}}
+{{""}}        - {{toJson .}}
 {{end -}}
 {{end -}}
 {{end -}}
@@ -48,16 +51,27 @@ paths:
   {{$global := . -}}
   {{if (and ._current.name (hasKey $global._current "item")) -}}
     {{$_ := set $global "_folder" $global._current.name -}}
+    {{if eq $global._depth 1}}{{$_ := set $global "_currentTag" list}}{{end -}}
     {{if not (hasKey $global._tags ._current.name) -}}
-      {{$_ := set $global._tags ._current.name $global._current.description -}}
+      {{$_ := set $global "_currentTag" (append $global._currentTag ._current.name) -}}
+      {{$_ := set $global._tags ._current.name (dict "description" ._current.description "collisionCount" 0) -}}
+    {{else -}}
+      {{$collisionCount := add (get (get $global._tags ._current.name) "collisionCount") 1 -}}
+      {{$tag := print ._current.name $collisionCount -}}
+      {{$_ := set $global "_currentTag" (append $global._currentTag $tag) -}}
+      {{$_ := set (get $global._tags ._current.name) "collisionCount" $collisionCount -}}
+      {{$_ := set $global._tags $tag (dict "description" ._current.description "collisionCount" 0) -}}
     {{end -}}
   {{end -}}
   {{if (hasKey $global._current "item") -}}
+    {{$_ := set $global "_depth" (add $global._depth 1) -}}
     {{range $item := $global._current.item -}}
       {{$_ := set $global "_current" $item -}}
       {{template "folder" $global -}}
+      {{$_ := set $global "_depth" (sub $global._depth 1) -}}
     {{end -}}
   {{else -}}
+    {{$_ := set $global "_depth" (add $global._depth 1) -}}{{/* correct for sub on item above*/ -}}
     {{template "item" $global -}}
   {{end -}}
 {{end -}}
@@ -74,7 +88,7 @@ paths:
     {{$_ := set $path $methodKey dict -}}
   {{end -}}
   {{$methodObj := get $path $methodKey -}}
-  {{$_ := set $methodObj "tags" (list ._folder) -}}
+  {{$_ := set $methodObj "tags" ._currentTag -}}
   {{$_ := set $methodObj "summary" ._current.name -}}
   {{$_ := set $methodObj "operationId" (print $methodKey (regexReplaceAll "\\W" (nospace (title ._current.name)) "-")) -}}
   {{if ._current.request.description}}{{$_ := set $methodObj "description" ._current.request.description}}{{end -}}
