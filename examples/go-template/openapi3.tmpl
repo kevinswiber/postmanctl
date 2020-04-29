@@ -49,6 +49,16 @@ paths:
 {{range $methodObj.tags -}}
 {{""}}        - {{toJson .}}
 {{end -}}
+{{if $methodObj.parameters}}      parameters:{{"\n"}}{{end -}}
+{{range $methodObj.parameters -}}
+{{""}}        - name: {{toJson .name}}
+          schema:
+            type: string
+          in: {{toJson .in}}
+{{if .example}}          example: {{toJson .example}}{{"\n"}}{{end -}}
+{{if .description}}          description: |
+            {{trim (replace "\n" "\n            " .description)}}{{"\n"}}{{end -}}
+{{end -}}
 {{""}}      responses:
         "200":
           description: Default Response
@@ -77,10 +87,10 @@ paths:
     {{range $item := $global._current.item -}}
       {{$_ := set $global "_current" $item -}}
       {{template "folder" $global -}}
-      {{$_ := set $global "_depth" (sub $global._depth 1) -}}
     {{end -}}
+    {{$_ := set $global "_depth" (sub $global._depth 1) -}}
+    {{$_ := set $global "_currentTag" (initial $global._currentTag) -}}
   {{else -}}
-    {{$_ := set $global "_depth" (add $global._depth 1) -}}{{/* correct for sub on item above*/ -}}
     {{template "item" $global -}}
   {{end -}}
 {{end -}}
@@ -99,5 +109,12 @@ paths:
   {{$_ := set $methodObj "tags" ._currentTag -}}
   {{$_ := set $methodObj "summary" ._current.name -}}
   {{$_ := set $methodObj "operationId" (print $methodKey (regexReplaceAll "\\W" (nospace (title ._current.name)) "-")) -}}
+  {{if ._current.request.url.query -}}
+    {{if not $methodObj.parameters}}{{$_ := set $methodObj "parameters" list}}{{end -}}
+    {{range ._current.request.url.query -}}
+      {{$queryParam := dict "name" .key "in" "query" "description" .description "example" .value -}}
+      {{$_ := set $methodObj "parameters" (append (get $methodObj "parameters") $queryParam) -}}
+    {{end -}}
+  {{end -}}
   {{if ._current.request.description}}{{$_ := set $methodObj "description" ._current.request.description}}{{end -}}
 {{end -}}
