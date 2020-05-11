@@ -1,0 +1,147 @@
+{{range . -}}
+
+{{$_ := set . "_servers" list -}}
+{{$_ := set . "_tags" dict -}}
+{{$_ := set . "_paths" dict -}}
+{{$_ := set . "_components" dict -}}
+{{$_ := set . "_depth" 0 -}}
+{{$_ := set . "_currentTag" list -}}
+{{$_ := set . "_current" . -}}
+
+{{template "transform-folder" . -}}
+---
+openapi: "3.0.3"
+info:
+  title: {{.info.name}}
+  # TODO: update contact info.
+  contact:
+    name: "API Authors"
+{{if .info.description}}  description: |
+      {{trim (replace "\n" "\n      " .info.description)}}{{"\n"}}{{end -}}
+{{""}}  version: "1.0.0"
+{{if len ._servers -}}
+servers:
+{{range (._servers | uniq) -}}
+{{""}}  - url: {{.}}
+{{end -}}
+{{end -}}
+
+{{if len ._tags -}}
+tags:
+{{range $tagName, $tagObj := ._tags -}}
+{{$tagDesc := get $tagObj "description" -}}
+{{""}}  - name: {{toJson $tagName}}
+{{if $tagDesc}}    description: |
+      {{trim (replace "\n" "\n      " $tagDesc)}}{{"\n"}}{{end -}}
+{{end -}}
+{{end -}}
+
+paths:
+{{range $pathKey, $methodMap := ._paths -}}
+{{""}}  "{{$pathKey}}":
+{{$pathParameters := get $methodMap "_pathParameters" -}}
+{{if len $pathParameters -}}
+{{""}}    parameters:
+{{range $pathParameters -}}
+{{""}}      - name: {{.}}
+        in: path
+        required: true
+        schema:
+          type: string
+{{end -}}
+{{end -}}
+{{range $methodKey, $methodObj := $methodMap -}}
+{{if not (eq $methodKey "_pathParameters") -}}
+{{""}}    {{$methodKey}}:
+      operationId: {{$methodObj.operationId | toJson}}
+{{if $methodObj.summary}}      summary: {{trim $methodObj.summary | toJson}}{{"\n"}}{{end -}}
+{{""}}      description: |
+        {{trim (replace "\n" "\n        " (coalesce $methodObj.description "TODO: add description"))}}
+{{if $methodObj.tags}}      tags:{{"\n"}}{{end -}}
+{{range $methodObj.tags -}}
+{{""}}        - {{toJson .}}
+{{end -}}
+{{if $methodObj.parameters}}      parameters:{{"\n"}}{{end -}}
+{{range $methodObj.parameters -}}
+{{""}}        - name: {{toJson .name}}
+          schema:
+            type: string
+          in: {{.in}}
+{{if .example}}          example: {{toJson .example}}{{"\n"}}{{end -}}
+{{if .description}}          description: |
+            {{trim (replace "\n" "\n            " .description)}}{{"\n"}}{{end -}}
+{{end -}}
+{{""}}      responses:
+        "200":
+          description: Default Response
+{{end -}}
+{{end -}}
+{{end -}}
+
+{{- end -}}
+{{- define "transform-folder" -}}
+  {{$global := . -}}
+  {{if (and ._current.name (hasKey $global._current "item")) -}}
+    {{$_ := set $global "_folder" $global._current.name -}}
+    {{if eq $global._depth 1}}{{$_ := set $global "_currentTag" list}}{{end -}}
+    {{if not (hasKey $global._tags ._current.name) -}}
+      {{$_ := set $global "_currentTag" (append $global._currentTag ._current.name) -}}
+      {{$_ := set $global._tags ._current.name (dict "description" ._current.description "collisionCount" 0) -}}
+    {{else -}}
+      {{$collisionCount := add (get (get $global._tags ._current.name) "collisionCount") 1 -}}
+      {{$tag := print ._current.name $collisionCount -}}
+      {{$_ := set $global "_currentTag" (append $global._currentTag $tag) -}}
+      {{$_ := set (get $global._tags ._current.name) "collisionCount" $collisionCount -}}
+      {{$_ := set $global._tags $tag (dict "description" ._current.description "collisionCount" 0) -}}
+    {{end -}}
+  {{end -}}
+  {{if (hasKey $global._current "item") -}}
+    {{$_ := set $global "_depth" (add $global._depth 1) -}}
+    {{range $item := $global._current.item -}}
+      {{$_ := set $global "_current" $item -}}
+      {{template "transform-folder" $global -}}
+    {{end -}}
+    {{$_ := set $global "_depth" (sub $global._depth 1) -}}
+    {{$_ := set $global "_currentTag" (initial $global._currentTag) -}}
+  {{else -}}
+    {{template "transform-item" $global -}}
+  {{end -}}
+{{end -}}
+{{define "transform-item" -}}
+  {{$_ := set . "_servers" (append ._servers (print (coalesce ._current.protocol "http") "://" (join "." ._current.request.url.host))) -}}
+  {{$pathKey := (print "/" (._current.request.url.path | join "/")) -}}
+  {{$matches := regexFindAll "{{([\\w-]+)}}" $pathKey -1 -}}
+  {{$pathParameters := list -}}
+  {{range $matches -}}
+    {{$pathParameters = append $pathParameters (regexReplaceAll "{{([\\w-]+)}}" . "${1}") -}}
+  {{end -}}
+  {{$pathKey := regexReplaceAll "{{([\\w-]+)}}" $pathKey "{${1}}" -}}
+  {{if not (hasKey ._paths $pathKey) -}}
+    {{$_ := set ._paths $pathKey dict -}}
+  {{end -}}
+  {{$path := (get ._paths $pathKey) -}}
+  {{$_ := set $path "_pathParameters" $pathParameters -}}
+  {{$methodKey := lower ._current.request.method -}}
+  {{if not (hasKey $path $methodKey) -}}
+    {{$_ := set $path $methodKey dict -}}
+  {{end -}}
+  {{$methodObj := get $path $methodKey -}}
+  {{$_ := set $methodObj "tags" ._currentTag -}}
+  {{$_ := set $methodObj "summary" ._current.name -}}
+  {{$_ := set $methodObj "operationId" (print $methodKey (regexReplaceAll "\\W" (nospace (title ._current.name)) "-")) -}}
+  {{if ._current.request.url.query -}}
+    {{if not $methodObj.parameters}}{{$_ := set $methodObj "parameters" list}}{{end -}}
+    {{range ._current.request.url.query -}}
+      {{$queryParam := dict "name" .key "in" "query" "description" .description "example" .value -}}
+      {{$_ := set $methodObj "parameters" (append (get $methodObj "parameters") $queryParam) -}}
+    {{end -}}
+  {{end -}}
+  {{if ._current.request.header -}}
+    {{if not $methodObj.parameters}}{{$_ := set $methodObj "parameters" list}}{{end -}}
+    {{range ._current.request.header -}}
+      {{$header := dict "name" .key "in" "header" "description" .description "example" .value -}}
+      {{$_ := set $methodObj "parameters" (append (get $methodObj "parameters") $header) -}}
+    {{end -}}
+  {{end -}}
+  {{if ._current.request.description}}{{$_ := set $methodObj "description" ._current.request.description}}{{end -}}
+{{end -}}

@@ -25,7 +25,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/Masterminds/sprig"
+	sprig "github.com/Masterminds/sprig/v3"
 	"github.com/kevinswiber/postmanctl/pkg/sdk/client"
 	"github.com/kevinswiber/postmanctl/pkg/sdk/printers"
 	"github.com/kevinswiber/postmanctl/pkg/sdk/resources"
