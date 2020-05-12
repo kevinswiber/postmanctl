@@ -103,7 +103,7 @@ func (s *Service) ReplaceSchemaFromReader(ctx context.Context, reader io.Reader,
 	urlParams["apiID"] = apiID
 	urlParams["apiVersionID"] = apiVersionID
 
-	return s.ReplaceFromReader(ctx, resources.APIVersionType, reader, urlParams)
+	return s.ReplaceFromReader(ctx, resources.SchemaType, reader, urlParams)
 }
 
 // ReplaceFromReader posts a new resource to the Postman API.
@@ -198,7 +198,7 @@ func (s *Service) ReplaceFromReader(ctx context.Context, t resources.ResourceTyp
 		requestBody, err = json.Marshal(c)
 	case resources.SchemaType:
 		path = []string{"apis", urlParams["apiID"], "versions", urlParams["apiVersionID"], "schemas", urlParams["ID"]}
-		responseValueKey = "version"
+		responseValueKey = "schema"
 
 		c := struct {
 			Schema map[string]interface{} `json:"schema"`
