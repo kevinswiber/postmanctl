@@ -56,10 +56,21 @@ func (m *MonitorListItem) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	m.ID = v["id"].(string)
-	m.Name = v["name"].(string)
-	m.UID = v["uid"].(string)
-	m.Owner = strconv.Itoa(int(v["owner"].(float64)))
+	if val, ok := v["id"]; ok {
+		m.ID = val.(string)
+	}
+
+	if val, ok := v["name"]; ok {
+		m.Name = val.(string)
+	}
+
+	if val, ok := v["uid"]; ok {
+		m.UID = val.(string)
+	}
+
+	if val, ok := v["owner"]; ok {
+		m.Owner = strconv.Itoa(int(val.(float64)))
+	}
 
 	return nil
 }
