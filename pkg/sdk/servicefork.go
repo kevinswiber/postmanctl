@@ -51,9 +51,7 @@ func (s *Service) ForkCollection(ctx context.Context, id, workspace, label strin
 		if v2, ok := vMap["uid"]; ok {
 			return v2.(string), nil
 		}
-		if v2, ok := vMap["id"]; ok {
-			return v2.(string), nil
-		}
+
 		return "", nil
 	}
 	return "", nil
@@ -91,9 +89,7 @@ func (s *Service) MergeCollection(ctx context.Context, id, destination, strategy
 		if v2, ok := vMap["uid"]; ok {
 			return v2.(string), nil
 		}
-		if v2, ok := vMap["id"]; ok {
-			return v2.(string), nil
-		}
+
 		return "", nil
 	}
 	return "", nil
