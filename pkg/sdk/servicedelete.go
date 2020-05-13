@@ -100,7 +100,7 @@ func (s *Service) DeleteSchema(ctx context.Context, resourceID, apiID, apiVersio
 	urlParams["apiID"] = apiID
 	urlParams["apiVersionID"] = apiVersionID
 
-	return s.Delete(ctx, resources.APIVersionType, urlParams)
+	return s.Delete(ctx, resources.SchemaType, urlParams)
 }
 
 // Delete posts a new resource to the Postman API.
@@ -134,7 +134,7 @@ func (s *Service) Delete(ctx context.Context, t resources.ResourceType, urlParam
 		responseValueKey = "version"
 	case resources.SchemaType:
 		path = []string{"apis", urlParams["apiID"], "versions", urlParams["apiVersionID"], "schemas", urlParams["ID"]}
-		responseValueKey = "version"
+		responseValueKey = "schema"
 	default:
 		return "", fmt.Errorf("unable to delete resource, %+v not supported", t)
 	}
