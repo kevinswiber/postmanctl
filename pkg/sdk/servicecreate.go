@@ -125,7 +125,7 @@ func (s *Service) CreateSchemaFromReader(ctx context.Context, reader io.Reader, 
 	urlParams["apiID"] = apiID
 	urlParams["apiVersionID"] = apiVersionID
 
-	return s.CreateFromReader(ctx, resources.APIVersionType, reader, queryParams, urlParams)
+	return s.CreateFromReader(ctx, resources.SchemaType, reader, queryParams, urlParams)
 }
 
 // CreateFromReader posts a new resource to the Postman API.
@@ -157,7 +157,7 @@ func (s *Service) CreateFromReader(ctx context.Context, t resources.ResourceType
 		}{
 			Collection: v,
 		}
-		requestBody, err = json.Marshal(c)
+		requestBody, _ = json.Marshal(c) // already been unmarshalled, no error
 	case resources.EnvironmentType:
 		path = []string{"environments"}
 		responseValueKey = "environment"
@@ -177,7 +177,7 @@ func (s *Service) CreateFromReader(ctx context.Context, t resources.ResourceType
 		}{
 			Mock: v,
 		}
-		requestBody, err = json.Marshal(c)
+		requestBody, _ = json.Marshal(c)
 	case resources.MonitorType:
 		path = []string{"monitors"}
 		responseValueKey = "monitor"
@@ -187,7 +187,7 @@ func (s *Service) CreateFromReader(ctx context.Context, t resources.ResourceType
 		}{
 			Monitor: v,
 		}
-		requestBody, err = json.Marshal(c)
+		requestBody, _ = json.Marshal(c)
 	case resources.WorkspaceType:
 		path = []string{"workspaces"}
 		responseValueKey = "workspace"
@@ -197,7 +197,7 @@ func (s *Service) CreateFromReader(ctx context.Context, t resources.ResourceType
 		}{
 			Workspace: v,
 		}
-		requestBody, err = json.Marshal(c)
+		requestBody, _ = json.Marshal(c)
 	case resources.APIType:
 		path = []string{"apis"}
 		responseValueKey = "api"
@@ -207,7 +207,7 @@ func (s *Service) CreateFromReader(ctx context.Context, t resources.ResourceType
 		}{
 			API: v,
 		}
-		requestBody, err = json.Marshal(c)
+		requestBody, _ = json.Marshal(c)
 	case resources.APIVersionType:
 		path = []string{"apis", urlParams["apiID"], "versions"}
 		responseValueKey = "version"
@@ -217,23 +217,19 @@ func (s *Service) CreateFromReader(ctx context.Context, t resources.ResourceType
 		}{
 			Version: v,
 		}
-		requestBody, err = json.Marshal(c)
+		requestBody, _ = json.Marshal(c)
 	case resources.SchemaType:
 		path = []string{"apis", urlParams["apiID"], "versions", urlParams["apiVersionID"], "schemas"}
-		responseValueKey = "version"
+		responseValueKey = "schema"
 
 		c := struct {
 			Schema map[string]interface{} `json:"schema"`
 		}{
 			Schema: v,
 		}
-		requestBody, err = json.Marshal(c)
+		requestBody, _ = json.Marshal(c)
 	default:
 		return "", fmt.Errorf("unable to create resource, %+v not supported", t)
-	}
-
-	if err != nil {
-		return "", err
 	}
 
 	var responseBody interface{}

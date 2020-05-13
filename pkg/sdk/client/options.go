@@ -29,7 +29,7 @@ type Options struct {
 	Client *http.Client
 }
 
-// NewOptions creates a new instance of the Postman APIClient.
+// NewOptions creates a new instance of the Postman API client options.
 func NewOptions(baseURL *url.URL, apiKey string, client *http.Client) *Options {
 	base := *baseURL
 	if !strings.HasSuffix(base.Path, "/") {
