@@ -1,7 +1,4 @@
 
-generate:
-	go generate ./...
-
 build:
 	GITBRANCH=$(shell git rev-parse --abbrev-ref HEAD); \
 	GITCOMMIT=$(shell git rev-parse --short HEAD); \
@@ -15,6 +12,17 @@ build:
 		-X github.com/kevinswiber/postmanctl/internal/runtime/cmd.goVersion=$$GOVERSION \
 		-X github.com/kevinswiber/postmanctl/internal/runtime/cmd.platform=$$GOPLATFORM \
 		" -o ./output/postmanctl ./cmd/postmanctl
+
+test: vet
+	$(info ******************** running tests ********************)
+	go test -v ./...
+
+vet:
+	$(info ******************** vetting ********************)
+	go vet ./...
+
+generate:
+	go generate ./...
 
 release:
 	GOVERSION=$(shell go version | awk '{print $$3}'); \
@@ -33,4 +41,4 @@ doc:
 	go build -o ./output/genpostmanctldocs ./cmd/genpostmanctldocs
 	./output/genpostmanctldocs
 
-.PHONY: generate build install doc
+.PHONY: generate build install doc release release-snapshot vet
