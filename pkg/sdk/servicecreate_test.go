@@ -23,6 +23,7 @@ import (
 	"testing"
 
 	"github.com/kevinswiber/postmanctl/pkg/sdk"
+	"github.com/kevinswiber/postmanctl/pkg/sdk/resources"
 )
 
 var (
@@ -61,6 +62,85 @@ func TestCreateCollectionFromReader(t *testing.T) {
 
 	if r != "abcdef" {
 		t.Errorf("Resource UID is incorrect, have: %s, want: %s", r, "abcdef")
+	}
+}
+
+func TestCreateCollectionFromReaderError(t *testing.T) {
+	teardown := setupCreateTest()
+	defer teardown()
+
+	path := "/collections"
+	subject := "{\"collection\":{\"uid\":\"abcdef\"}}"
+
+	createMux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPost)
+		}
+		w.WriteHeader(http.StatusInternalServerError)
+	})
+
+	ensurePath(t, createMux, path)
+
+	rdr := strings.NewReader(subject)
+	_, err := createService.CreateCollectionFromReader(context.Background(), rdr, "abcdef")
+	if err == nil {
+		t.Error("Expected error.")
+	}
+}
+
+func TestCreateCollectionFromReaderMissingIDCondition(t *testing.T) {
+	teardown := setupCreateTest()
+	defer teardown()
+
+	path := "/collections"
+	subject := `{"collection":{}}`
+
+	createMux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPost)
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(subject))
+	})
+
+	ensurePath(t, createMux, path)
+
+	rdr := strings.NewReader(subject)
+	r, err := createService.CreateCollectionFromReader(context.Background(), rdr, "abcdef")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if r != "" {
+		t.Errorf("Resource UID is incorrect, have: %s, want: %s", r, "")
+	}
+}
+
+func TestCreateCollectionFromReaderMissingResponseValueCondition(t *testing.T) {
+	teardown := setupCreateTest()
+	defer teardown()
+
+	path := "/collections"
+	subject := `{"blah":{}}`
+
+	createMux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPost)
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(subject))
+	})
+
+	ensurePath(t, createMux, path)
+
+	rdr := strings.NewReader(subject)
+	r, err := createService.CreateCollectionFromReader(context.Background(), rdr, "abcdef")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if r != "" {
+		t.Errorf("Resource UID is incorrect, have: %s, want: %s", r, "")
 	}
 }
 
@@ -287,5 +367,35 @@ func TestCreateSchemaFromReader(t *testing.T) {
 
 	if r != "abcdef" {
 		t.Errorf("Resource ID is incorrect, have: %s, want: %s", r, "abcdef")
+	}
+}
+
+func TestCreateFromReaderReadError(t *testing.T) {
+	queryParams := make(map[string]string)
+	urlParams := make(map[string]string)
+	var rdr errReader
+	_, err := createService.CreateFromReader(context.Background(), resources.CollectionType, rdr, queryParams, urlParams)
+	if err == nil {
+		t.Errorf("Expected error.")
+	}
+}
+
+func TestCreateFromReaderMarshalError(t *testing.T) {
+	queryParams := make(map[string]string)
+	urlParams := make(map[string]string)
+	rdr := strings.NewReader(`{"eRr0r":}`)
+	_, err := createService.CreateFromReader(context.Background(), resources.CollectionType, rdr, queryParams, urlParams)
+	if err == nil {
+		t.Errorf("Expected error.")
+	}
+}
+
+func TestCreateFromReaderInvalidResourceError(t *testing.T) {
+	queryParams := make(map[string]string)
+	urlParams := make(map[string]string)
+	rdr := strings.NewReader(`{"collection":{}}`)
+	_, err := createService.CreateFromReader(context.Background(), 99, rdr, queryParams, urlParams)
+	if err == nil {
+		t.Errorf("Expected error.")
 	}
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package sdk_test
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -47,4 +48,10 @@ func setupService(mux **http.ServeMux, service **sdk.Service) func() {
 	return func() {
 		server.Close()
 	}
+}
+
+type errReader string
+
+func (errReader) Read(p []byte) (n int, err error) {
+	return 0, errors.New("errReader")
 }

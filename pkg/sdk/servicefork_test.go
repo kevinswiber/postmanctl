@@ -62,6 +62,60 @@ func TestForkCollection(t *testing.T) {
 	}
 }
 
+func TestForkCollectionMissingIDCondition(t *testing.T) {
+	teardown := setupForkTest()
+	defer teardown()
+
+	path := "/collections/fork/abcdef"
+	subject := `{"collection": {}}`
+
+	forkMux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPost)
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(subject))
+	})
+
+	ensurePath(t, forkMux, path)
+
+	r, err := forkService.ForkCollection(context.Background(), "abcdef", "12345", "forkd")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if r != "" {
+		t.Errorf("Resource ID is incorrect, have: %s, want: %s", r, "")
+	}
+}
+
+func TestForkCollectionMissingResponseValueKeyCondition(t *testing.T) {
+	teardown := setupForkTest()
+	defer teardown()
+
+	path := "/collections/fork/abcdef"
+	subject := `{"blah":{"uid":"abcdef"}}`
+
+	forkMux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPost)
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(subject))
+	})
+
+	ensurePath(t, forkMux, path)
+
+	r, err := forkService.ForkCollection(context.Background(), "abcdef", "12345", "forkd")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if r != "" {
+		t.Errorf("Resource ID is incorrect, have: %s, want: %s", r, "")
+	}
+}
+
 func TestForkCollectionError(t *testing.T) {
 	teardown := setupForkTest()
 	defer teardown()
@@ -106,6 +160,60 @@ func TestMergeCollection(t *testing.T) {
 
 	if r != "abcdef" {
 		t.Errorf("Resource ID is incorrect, have: %s, want: %s", r, "abcdef")
+	}
+}
+
+func TestMergeCollectionMissingIDCondition(t *testing.T) {
+	teardown := setupForkTest()
+	defer teardown()
+
+	path := "/collections/merge"
+	subject := `{"collection":{}}`
+
+	forkMux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPost)
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(subject))
+	})
+
+	ensurePath(t, forkMux, path)
+
+	r, err := forkService.MergeCollection(context.Background(), "abcdef", "ghijkl", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if r != "" {
+		t.Errorf("Resource ID is incorrect, have: %s, want: %s", r, "")
+	}
+}
+
+func TestMergeCollectionMissingResponseValueKeyCondition(t *testing.T) {
+	teardown := setupForkTest()
+	defer teardown()
+
+	path := "/collections/merge"
+	subject := `{"blah":{}}`
+
+	forkMux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPost)
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(subject))
+	})
+
+	ensurePath(t, forkMux, path)
+
+	r, err := forkService.MergeCollection(context.Background(), "abcdef", "ghijkl", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if r != "" {
+		t.Errorf("Resource ID is incorrect, have: %s, want: %s", r, "")
 	}
 }
 

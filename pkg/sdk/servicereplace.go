@@ -135,7 +135,7 @@ func (s *Service) ReplaceFromReader(ctx context.Context, t resources.ResourceTyp
 		}{
 			Collection: v,
 		}
-		requestBody, err = json.Marshal(c)
+		requestBody, _ = json.Marshal(c) // already been unmarshalled, no error
 	case resources.EnvironmentType:
 		path = []string{"environments", urlParams["ID"]}
 		responseValueKey = "environment"
@@ -145,7 +145,7 @@ func (s *Service) ReplaceFromReader(ctx context.Context, t resources.ResourceTyp
 		}{
 			Environment: v,
 		}
-		requestBody, err = json.Marshal(c)
+		requestBody, _ = json.Marshal(c)
 	case resources.MockType:
 		path = []string{"mocks", urlParams["ID"]}
 		responseValueKey = "mock"
@@ -155,7 +155,7 @@ func (s *Service) ReplaceFromReader(ctx context.Context, t resources.ResourceTyp
 		}{
 			Mock: v,
 		}
-		requestBody, err = json.Marshal(c)
+		requestBody, _ = json.Marshal(c)
 	case resources.MonitorType:
 		path = []string{"monitors", urlParams["ID"]}
 		responseValueKey = "monitor"
@@ -165,7 +165,7 @@ func (s *Service) ReplaceFromReader(ctx context.Context, t resources.ResourceTyp
 		}{
 			Monitor: v,
 		}
-		requestBody, err = json.Marshal(c)
+		requestBody, _ = json.Marshal(c)
 	case resources.WorkspaceType:
 		path = []string{"workspaces", urlParams["ID"]}
 		responseValueKey = "workspace"
@@ -175,7 +175,7 @@ func (s *Service) ReplaceFromReader(ctx context.Context, t resources.ResourceTyp
 		}{
 			Workspace: v,
 		}
-		requestBody, err = json.Marshal(c)
+		requestBody, _ = json.Marshal(c)
 	case resources.APIType:
 		path = []string{"apis", urlParams["ID"]}
 		responseValueKey = "api"
@@ -185,7 +185,7 @@ func (s *Service) ReplaceFromReader(ctx context.Context, t resources.ResourceTyp
 		}{
 			API: v,
 		}
-		requestBody, err = json.Marshal(c)
+		requestBody, _ = json.Marshal(c)
 	case resources.APIVersionType:
 		path = []string{"apis", urlParams["apiID"], "versions", urlParams["ID"]}
 		responseValueKey = "version"
@@ -195,7 +195,7 @@ func (s *Service) ReplaceFromReader(ctx context.Context, t resources.ResourceTyp
 		}{
 			Version: v,
 		}
-		requestBody, err = json.Marshal(c)
+		requestBody, _ = json.Marshal(c)
 	case resources.SchemaType:
 		path = []string{"apis", urlParams["apiID"], "versions", urlParams["apiVersionID"], "schemas", urlParams["ID"]}
 		responseValueKey = "schema"
@@ -205,13 +205,9 @@ func (s *Service) ReplaceFromReader(ctx context.Context, t resources.ResourceTyp
 		}{
 			Schema: v,
 		}
-		requestBody, err = json.Marshal(c)
+		requestBody, _ = json.Marshal(c)
 	default:
 		return "", fmt.Errorf("unable to replace resource, %+v not supported", t)
-	}
-
-	if err != nil {
-		return "", err
 	}
 
 	var responseBody interface{}

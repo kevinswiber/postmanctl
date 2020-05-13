@@ -23,6 +23,7 @@ import (
 	"testing"
 
 	"github.com/kevinswiber/postmanctl/pkg/sdk"
+	"github.com/kevinswiber/postmanctl/pkg/sdk/resources"
 )
 
 var (
@@ -61,6 +62,85 @@ func TestReplaceCollectionFromReader(t *testing.T) {
 
 	if r != "abcdef" {
 		t.Errorf("Resource UID is incorrect, have: %s, want: %s", r, "abcdef")
+	}
+}
+
+func TestReplaceCollectionFromReaderError(t *testing.T) {
+	teardown := setupReplaceTest()
+	defer teardown()
+
+	path := "/collections/abcdef"
+	subject := "{\"collection\":{\"uid\":\"abcdef\"}}"
+
+	replaceMux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPut {
+			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPut)
+		}
+		w.WriteHeader(http.StatusInternalServerError)
+	})
+
+	ensurePath(t, replaceMux, path)
+
+	rdr := strings.NewReader(subject)
+	_, err := replaceService.ReplaceCollectionFromReader(context.Background(), rdr, "abcdef")
+	if err == nil {
+		t.Error("Expected error.")
+	}
+}
+
+func TestReplaceCollectionFromReaderMissingIDCondition(t *testing.T) {
+	teardown := setupReplaceTest()
+	defer teardown()
+
+	path := "/collections/abcdef"
+	subject := `{"collection":{}}`
+
+	replaceMux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPut {
+			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPut)
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(subject))
+	})
+
+	ensurePath(t, replaceMux, path)
+
+	rdr := strings.NewReader(subject)
+	r, err := replaceService.ReplaceCollectionFromReader(context.Background(), rdr, "abcdef")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if r != "" {
+		t.Errorf("Resource UID is incorrect, have: %s, want: %s", r, "")
+	}
+}
+
+func TestReplaceCollectionFromReaderMissingResponseValueCondition(t *testing.T) {
+	teardown := setupReplaceTest()
+	defer teardown()
+
+	path := "/collections/abcdef"
+	subject := `{"blah":{}}`
+
+	replaceMux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPut {
+			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPut)
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(subject))
+	})
+
+	ensurePath(t, replaceMux, path)
+
+	rdr := strings.NewReader(subject)
+	r, err := replaceService.ReplaceCollectionFromReader(context.Background(), rdr, "abcdef")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if r != "" {
+		t.Errorf("Resource UID is incorrect, have: %s, want: %s", r, "")
 	}
 }
 
@@ -287,5 +367,32 @@ func TestReplaceSchemaFromReader(t *testing.T) {
 
 	if r != "abcdef" {
 		t.Errorf("Resource ID is incorrect, have: %s, want: %s", r, "abcdef")
+	}
+}
+
+func TestReplaceFromReaderReadError(t *testing.T) {
+	urlParams := make(map[string]string)
+	var rdr errReader
+	_, err := replaceService.ReplaceFromReader(context.Background(), resources.CollectionType, rdr, urlParams)
+	if err == nil {
+		t.Errorf("Expected error.")
+	}
+}
+
+func TestReplaceFromReaderMarshalError(t *testing.T) {
+	urlParams := make(map[string]string)
+	rdr := strings.NewReader(`{"eRr0r":}`)
+	_, err := replaceService.ReplaceFromReader(context.Background(), resources.CollectionType, rdr, urlParams)
+	if err == nil {
+		t.Errorf("Expected error.")
+	}
+}
+
+func TestReplaceFromReaderInvalidResourceError(t *testing.T) {
+	urlParams := make(map[string]string)
+	rdr := strings.NewReader(`{"collection":{}}`)
+	_, err := replaceService.ReplaceFromReader(context.Background(), 99, rdr, urlParams)
+	if err == nil {
+		t.Errorf("Expected error.")
 	}
 }

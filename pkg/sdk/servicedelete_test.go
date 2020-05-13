@@ -62,6 +62,80 @@ func TestDeleteCollection(t *testing.T) {
 	}
 }
 
+func TestDeleteCollectionError(t *testing.T) {
+	teardown := setupDeleteTest()
+	defer teardown()
+
+	path := "/collections/abcdef"
+	deleteMux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodDelete {
+			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodDelete)
+		}
+		w.WriteHeader(http.StatusInternalServerError)
+	})
+
+	ensurePath(t, deleteMux, path)
+
+	_, err := deleteService.DeleteCollection(context.Background(), "abcdef")
+	if err == nil {
+		t.Error("Expected error.")
+	}
+}
+
+func TestDeleteMissingIDCondition(t *testing.T) {
+	teardown := setupDeleteTest()
+	defer teardown()
+
+	path := "/collections/abcdef"
+	subject := `{"collection":{}}`
+
+	deleteMux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodDelete {
+			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodDelete)
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(subject))
+	})
+
+	ensurePath(t, deleteMux, path)
+
+	r, err := deleteService.DeleteCollection(context.Background(), "abcdef")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if r != "" {
+		t.Errorf("Resource ID is incorrect, have: %s, want: %s", r, "")
+	}
+}
+
+func TestDeleteMissingResponseValueCondition(t *testing.T) {
+	teardown := setupDeleteTest()
+	defer teardown()
+
+	path := "/collections/abcdef"
+	subject := `{"blah":{}}`
+
+	deleteMux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodDelete {
+			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodDelete)
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(subject))
+	})
+
+	ensurePath(t, deleteMux, path)
+
+	r, err := deleteService.DeleteCollection(context.Background(), "abcdef")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if r != "" {
+		t.Errorf("Resource ID is incorrect, have: %s, want: %s", r, "")
+	}
+}
+
 func TestDeleteEnvironment(t *testing.T) {
 	teardown := setupDeleteTest()
 	defer teardown()
@@ -267,6 +341,14 @@ func TestDeleteSchemaMissingAPIIDError(t *testing.T) {
 
 func TestDeleteSchemaMissingAPIVersionIDError(t *testing.T) {
 	_, err := deleteService.DeleteSchema(context.Background(), "abcdef", "12345", "")
+	if err == nil {
+		t.Errorf("Expected error.")
+	}
+}
+
+func TestDeleteInvalidResourceError(t *testing.T) {
+	urlParams := make(map[string]string)
+	_, err := deleteService.Delete(context.Background(), 99, urlParams)
 	if err == nil {
 		t.Errorf("Expected error.")
 	}
