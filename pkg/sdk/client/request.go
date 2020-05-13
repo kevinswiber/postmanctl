@@ -180,10 +180,6 @@ func (r *Request) URL() *url.URL {
 func (r *Request) Do() (*http.Response, error) {
 	url := r.URL().String()
 
-	if r.err != nil {
-		return nil, r.err
-	}
-
 	req, err := http.NewRequestWithContext(r.ctx, r.method, url, r.requestReader)
 	if err != nil {
 		return nil, err
@@ -222,7 +218,9 @@ func (r *Request) Do() (*http.Response, error) {
 			return resp, err
 		}
 
-		json.Unmarshal(body, &r.result)
+		if err := json.Unmarshal(body, &r.result); err != nil {
+			return nil, err
+		}
 	}
 
 	return resp, nil

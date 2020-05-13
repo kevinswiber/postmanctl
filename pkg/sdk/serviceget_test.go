@@ -87,7 +87,7 @@ func TestCollectionsItem(t *testing.T) {
 	defer teardown()
 
 	path := "/collections/abcdef"
-	subject := "{\"collection\":{\"uid\":\"abcdef\"}}"
+	subject := `{"collection":{"info":{"name":"hi","schema":""},"uid":"abcdef","item":[]}}`
 
 	getMux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -823,7 +823,7 @@ func TestAPIRelationsList(t *testing.T) {
 	defer teardown()
 
 	path := "/apis/12345/versions/4567/relations"
-	subject := "{\"relations\":[{\"uid\":\"abcdef\"}]}"
+	subject := `{"relations":{}}`
 
 	getMux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -869,7 +869,7 @@ func TestFormattedAPIRelationsList(t *testing.T) {
 	defer teardown()
 
 	path := "/apis/12345/versions/4567/relations"
-	subject := "{\"relations\":[{\"uid\":\"abcdef\"}]}"
+	subject := `{"relations":{}}`
 
 	getMux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
