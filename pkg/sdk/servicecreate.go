@@ -125,7 +125,7 @@ func (s *Service) CreateSchemaFromReader(ctx context.Context, reader io.Reader, 
 	urlParams["apiID"] = apiID
 	urlParams["apiVersionID"] = apiVersionID
 
-	return s.CreateFromReader(ctx, resources.APIVersionType, reader, queryParams, urlParams)
+	return s.CreateFromReader(ctx, resources.SchemaType, reader, queryParams, urlParams)
 }
 
 // CreateFromReader posts a new resource to the Postman API.
@@ -220,7 +220,7 @@ func (s *Service) CreateFromReader(ctx context.Context, t resources.ResourceType
 		requestBody, err = json.Marshal(c)
 	case resources.SchemaType:
 		path = []string{"apis", urlParams["apiID"], "versions", urlParams["apiVersionID"], "schemas"}
-		responseValueKey = "version"
+		responseValueKey = "schema"
 
 		c := struct {
 			Schema map[string]interface{} `json:"schema"`
