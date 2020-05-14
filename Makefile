@@ -15,7 +15,7 @@ build:
 
 test: vet
 	$(info ******************** running tests ********************)
-	go test -v ./...
+	go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
 
 vet:
 	$(info ******************** vetting ********************)
