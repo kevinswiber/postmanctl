@@ -1,0 +1,14 @@
+linters-settings:
+  errcheck:
+    exclude: ./.errcheck-exclusions.txt
+  gocyclo:
+    min-complexity: 21 # 21-50 = High Risk
+
+linters:
+  enable:
+    - gofmt
+    - gocyclo
+    - misspell
+    - testpackage
+    - gosec
+  disable-all: false

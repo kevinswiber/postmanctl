@@ -47,7 +47,9 @@ func TestForkCollection(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPost)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, forkMux, path)
@@ -74,7 +76,9 @@ func TestForkCollectionMissingIDCondition(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPost)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, forkMux, path)
@@ -101,7 +105,9 @@ func TestForkCollectionMissingResponseValueKeyCondition(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPost)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, forkMux, path)
@@ -148,7 +154,9 @@ func TestMergeCollection(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPost)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, forkMux, path)
@@ -175,7 +183,9 @@ func TestMergeCollectionMissingIDCondition(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPost)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, forkMux, path)
@@ -202,7 +212,9 @@ func TestMergeCollectionMissingResponseValueKeyCondition(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPost)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, forkMux, path)

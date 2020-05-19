@@ -85,11 +85,12 @@ func generateReplaceSubcommand(t resources.ResourceType, use string, aliases []s
 func replaceResource(t resources.ResourceType, resourceID string) error {
 	if inputReader == nil {
 		r, err := os.Open(inputFile)
-		defer r.Close()
 
 		if err != nil {
 			return err
 		}
+
+		defer r.Close()
 
 		inputReader = r
 	}

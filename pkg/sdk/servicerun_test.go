@@ -39,7 +39,9 @@ func TestServiceRunMonitor(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPost)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("{\"run\":{}}"))
+		if _, err := w.Write([]byte(`{"run":{}}`)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, mux, path)

@@ -216,11 +216,9 @@ func (s *Service) ReplaceFromReader(ctx context.Context, t resources.ResourceTyp
 	}
 
 	// Try a best attempt at returning the ID value.
-	var responseValue map[string]interface{}
-	responseValue = responseBody.(map[string]interface{})
+	responseValue := responseBody.(map[string]interface{})
 	if v, ok := responseValue[responseValueKey]; ok {
-		var vMap map[string]interface{}
-		vMap = v.(map[string]interface{})
+		vMap := v.(map[string]interface{})
 		if v2, ok := vMap["uid"]; ok {
 			return v2.(string), nil
 		}

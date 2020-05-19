@@ -47,7 +47,9 @@ func TestCollectionsList(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodGet)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, getMux, path)
@@ -94,7 +96,9 @@ func TestCollectionsItem(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodGet)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, getMux, path)
@@ -141,7 +145,9 @@ func TestEnvironmentsList(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodGet)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, getMux, path)
@@ -188,7 +194,9 @@ func TestEnvironmentsItem(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodGet)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, getMux, path)
@@ -235,7 +243,9 @@ func TestMocksList(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodGet)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, getMux, path)
@@ -282,7 +292,9 @@ func TestMocksItem(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodGet)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, getMux, path)
@@ -329,7 +341,9 @@ func TestMonitorsList(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodGet)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, getMux, path)
@@ -376,7 +390,9 @@ func TestMonitorsItem(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodGet)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, getMux, path)
@@ -423,7 +439,9 @@ func TestWorkspacesList(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodGet)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, getMux, path)
@@ -470,7 +488,9 @@ func TestWorkspacesItem(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodGet)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, getMux, path)
@@ -517,7 +537,9 @@ func TestUser(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodGet)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, getMux, path)
@@ -564,7 +586,9 @@ func TestAPIsList(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodGet)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, getMux, path)
@@ -595,7 +619,9 @@ func TestAPIsListWithWorkspace(t *testing.T) {
 			t.Errorf("Expected workspace ID, have: %s, want: %s", workspace, "12345")
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, getMux, path)
@@ -642,7 +668,9 @@ func TestAPIsItem(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodGet)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, getMux, path)
@@ -689,7 +717,9 @@ func TestAPIVersionList(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodGet)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, getMux, path)
@@ -736,7 +766,9 @@ func TestAPIVersionsItem(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodGet)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, getMux, path)
@@ -783,7 +815,9 @@ func TestSchema(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodGet)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, getMux, path)
@@ -830,7 +864,9 @@ func TestAPIRelationsList(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodGet)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, getMux, path)
@@ -876,7 +912,9 @@ func TestFormattedAPIRelationsList(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodGet)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, getMux, path)

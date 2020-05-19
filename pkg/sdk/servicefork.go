@@ -42,11 +42,9 @@ func (s *Service) ForkCollection(ctx context.Context, id, workspace, label strin
 	}
 
 	// Try a best attempt at returning the ID value.
-	var responseValue map[string]interface{}
-	responseValue = responseBody.(map[string]interface{})
+	responseValue := responseBody.(map[string]interface{})
 	if v, ok := responseValue[responseValueKey]; ok {
-		var vMap map[string]interface{}
-		vMap = v.(map[string]interface{})
+		vMap := v.(map[string]interface{})
 		if v2, ok := vMap["uid"]; ok {
 			return v2.(string), nil
 		}
@@ -79,11 +77,9 @@ func (s *Service) MergeCollection(ctx context.Context, id, destination, strategy
 	}
 
 	// Try a best attempt at returning the ID value.
-	var responseValue map[string]interface{}
-	responseValue = responseBody.(map[string]interface{})
+	responseValue := responseBody.(map[string]interface{})
 	if v, ok := responseValue[responseValueKey]; ok {
-		var vMap map[string]interface{}
-		vMap = v.(map[string]interface{})
+		vMap := v.(map[string]interface{})
 		if v2, ok := vMap["uid"]; ok {
 			return v2.(string), nil
 		}

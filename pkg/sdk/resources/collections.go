@@ -153,8 +153,7 @@ func populateItemGroup(b *ItemTreeNode, item []interface{}) error {
 	}
 
 	for _, v := range item {
-		var m map[string]interface{}
-		m = v.(map[string]interface{})
+		var m map[string]interface{} = v.(map[string]interface{})
 
 		if v2, ok := m["item"]; ok {
 			branch := ItemTreeNode{}

@@ -49,7 +49,9 @@ func TestCreateCollectionFromReader(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPost)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, createMux, path)
@@ -100,7 +102,9 @@ func TestCreateCollectionFromReaderMissingIDCondition(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPost)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, createMux, path)
@@ -128,7 +132,9 @@ func TestCreateCollectionFromReaderMissingResponseValueCondition(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPost)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, createMux, path)
@@ -156,7 +162,9 @@ func TestCreateEnvironmentFromReader(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPost)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, createMux, path)
@@ -184,7 +192,9 @@ func TestCreateMockFromReader(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPost)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, createMux, path)
@@ -212,7 +222,9 @@ func TestCreateMonitorFromReader(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPost)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, createMux, path)
@@ -240,7 +252,9 @@ func TestCreateWorkspaceFromReader(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPost)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, createMux, path)
@@ -268,7 +282,9 @@ func TestCreateAPIFromReader(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPost)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, createMux, path)
@@ -296,7 +312,9 @@ func TestCreateAPIVersionFromReader(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPost)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, createMux, path)
@@ -354,7 +372,9 @@ func TestCreateSchemaFromReader(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodPost)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, createMux, path)
