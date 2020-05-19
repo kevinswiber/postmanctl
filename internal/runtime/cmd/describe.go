@@ -39,7 +39,19 @@ func init() {
 	userCmd := &cobra.Command{
 		Use: "user",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return describeResource(resources.UserType)
+			resource, err := service.User(context.Background())
+
+			if err != nil {
+				return handleResponseError(err)
+			}
+
+			out, err := describeUser(resource)
+			if err != nil {
+				return err
+			}
+			fmt.Println(out)
+
+			return nil
 		},
 	}
 
@@ -47,8 +59,7 @@ func init() {
 		Use:     "api-versions",
 		Aliases: []string{"api-version"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			params := append([]string{forAPI}, args...)
-			return describeResource(resources.APIVersionType, params...)
+			return fetchAPIVersions(args)
 		},
 	}
 
@@ -58,7 +69,7 @@ func init() {
 	apiRelationsCmd := &cobra.Command{
 		Use: "api-relations",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return describeResource(resources.APIRelationsType, []string{forAPI, forAPIVersion}...)
+			return fetchAPIRelations(args)
 		},
 	}
 
@@ -71,20 +82,7 @@ func init() {
 	schemaCmd := &cobra.Command{
 		Use: "schema",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			params := []string{forAPI, forAPIVersion}
-			if len(args) == 0 {
-				version, err := service.APIVersion(context.Background(), forAPI, forAPIVersion)
-
-				if err != nil {
-					return handleResponseError(err)
-				}
-
-				if len(version.Schema) > 0 {
-					params = append(params, version.Schema[0])
-				}
-			}
-			params = append(params, args...)
-			return describeResource(resources.SchemaType, params...)
+			return fetchSchema(args)
 		},
 	}
 
@@ -95,13 +93,13 @@ func init() {
 	schemaCmd.MarkFlagRequired("for-api-version")
 
 	describeCmd.AddCommand(
-		generateDescribeSubcommand(resources.CollectionType, "collections", []string{"collection", "co"}),
-		generateDescribeSubcommand(resources.EnvironmentType, "environments", []string{"environment", "env"}),
-		generateDescribeSubcommand(resources.MonitorType, "monitors", []string{"monitor", "mon"}),
-		generateDescribeSubcommand(resources.MockType, "mocks", []string{"mock"}),
-		generateDescribeSubcommand(resources.WorkspaceType, "workspaces", []string{"workspace", "ws"}),
+		generateDescribeSubcommand("collections", []string{"collection", "co"}, fetchCollections),
+		generateDescribeSubcommand("environments", []string{"environment", "env"}, fetchEnvironments),
+		generateDescribeSubcommand("monitors", []string{"monitor", "mon"}, fetchMonitors),
+		generateDescribeSubcommand("mocks", []string{"mock"}, fetchMocks),
+		generateDescribeSubcommand("workspaces", []string{"workspace", "ws"}, fetchWorkspaces),
 		userCmd,
-		generateDescribeSubcommand(resources.APIType, "apis", []string{"api"}),
+		generateDescribeSubcommand("apis", []string{"api"}, fetchAPIs),
 		apiVersionsCmd,
 		apiRelationsCmd,
 		schemaCmd,
@@ -109,187 +107,211 @@ func init() {
 	rootCmd.AddCommand(describeCmd)
 }
 
-func generateDescribeSubcommand(t resources.ResourceType, use string, aliases []string) *cobra.Command {
+func generateDescribeSubcommand(use string, aliases []string, fn func(args []string) error) *cobra.Command {
 	return &cobra.Command{
 		Use:     use,
 		Aliases: aliases,
 		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return describeResource(t, args...)
+			return fn(args)
 		},
 	}
 }
 
-func describeResource(resourceType resources.ResourceType, args ...string) error {
-	switch resourceType {
-	case resources.CollectionType:
-		r := make(resources.CollectionSlice, len(args))
-		for i, id := range args {
-			resource, err := service.Collection(context.Background(), id)
-
-			if err != nil {
-				return handleResponseError(err)
-			}
-
-			r[i] = resource
-		}
-
-		out, err := describeCollections(r)
-		if err != nil {
-			return err
-		}
-
-		fmt.Println(out)
-	case resources.EnvironmentType:
-		r := make(resources.EnvironmentSlice, len(args))
-		for i, id := range args {
-			resource, err := service.Environment(context.Background(), id)
-
-			if err != nil {
-				return handleResponseError(err)
-			}
-
-			r[i] = resource
-		}
-
-		out, err := describeEnvironments(r)
-		if err != nil {
-			return err
-		}
-		fmt.Println(out)
-	case resources.MockType:
-		r := make(resources.MockSlice, len(args))
-		for i, id := range args {
-			resource, err := service.Mock(context.Background(), id)
-
-			if err != nil {
-				return handleResponseError(err)
-			}
-
-			r[i] = resource
-		}
-
-		out, err := describeMocks(r)
-		if err != nil {
-			return err
-		}
-		fmt.Println(out)
-	case resources.MonitorType:
-		r := make(resources.MonitorSlice, len(args))
-		for i, id := range args {
-			resource, err := service.Monitor(context.Background(), id)
-
-			if err != nil {
-				return handleResponseError(err)
-			}
-
-			r[i] = resource
-		}
-
-		out, err := describeMonitors(r)
-		if err != nil {
-			return err
-		}
-		fmt.Println(out)
-	case resources.APIType:
-		r := make(resources.APISlice, len(args))
-		for i, id := range args {
-			resource, err := service.API(context.Background(), id)
-
-			if err != nil {
-				return handleResponseError(err)
-			}
-
-			r[i] = resource
-		}
-
-		out, err := describeAPIs(r)
-		if err != nil {
-			return err
-		}
-		fmt.Println(out)
-	case resources.APIVersionType:
-		apiID := args[0]
-		ids := args[1:]
-
-		r := make(resources.APIVersionSlice, len(ids))
-		for i, id := range ids {
-			resource, err := service.APIVersion(context.Background(), apiID, id)
-
-			if err != nil {
-				return handleResponseError(err)
-			}
-
-			r[i] = resource
-		}
-
-		out, err := describeAPIVersions(r)
-		if err != nil {
-			return err
-		}
-		fmt.Println(out)
-	case resources.APIRelationsType:
-		apiID := args[0]
-		apiVersionID := args[1]
-		resource, err := service.APIRelations(context.Background(), apiID, apiVersionID)
+func fetchCollections(args []string) error {
+	r := make(resources.CollectionSlice, len(args))
+	for i, id := range args {
+		resource, err := service.Collection(context.Background(), id)
 
 		if err != nil {
 			return handleResponseError(err)
 		}
 
-		out, err := describeAPIRelations(resource)
-		if err != nil {
-			return err
-		}
-		fmt.Println(out)
-	case resources.WorkspaceType:
-		r := make(resources.WorkspaceSlice, len(args))
-		for i, id := range args {
-			resource, err := service.Workspace(context.Background(), id)
-
-			if err != nil {
-				return handleResponseError(err)
-			}
-
-			r[i] = resource
-		}
-
-		out, err := describeWorkspaces(r)
-		if err != nil {
-			return err
-		}
-		fmt.Println(out)
-	case resources.UserType:
-		resource, err := service.User(context.Background())
-
-		if err != nil {
-			return handleResponseError(err)
-		}
-
-		out, err := describeUser(resource)
-		if err != nil {
-			return err
-		}
-		fmt.Println(out)
-	case resources.SchemaType:
-		apiID := args[0]
-		apiVersionID := args[1]
-		id := args[2]
-
-		resource, err := service.Schema(context.Background(), apiID, apiVersionID, id)
-
-		if err != nil {
-			return handleResponseError(err)
-		}
-
-		out, err := describeSchema(resource)
-		if err != nil {
-			return err
-		}
-		fmt.Println(out)
-	default:
-		return fmt.Errorf("invalid resource type: %s", resourceType.String())
+		r[i] = resource
 	}
+
+	out, err := describeCollections(r)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(out)
+
+	return nil
+}
+
+func fetchEnvironments(args []string) error {
+	r := make(resources.EnvironmentSlice, len(args))
+	for i, id := range args {
+		resource, err := service.Environment(context.Background(), id)
+
+		if err != nil {
+			return handleResponseError(err)
+		}
+
+		r[i] = resource
+	}
+
+	out, err := describeEnvironments(r)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(out)
+
+	return nil
+}
+
+func fetchMocks(args []string) error {
+	r := make(resources.MockSlice, len(args))
+	for i, id := range args {
+		resource, err := service.Mock(context.Background(), id)
+
+		if err != nil {
+			return handleResponseError(err)
+		}
+
+		r[i] = resource
+	}
+
+	out, err := describeMocks(r)
+	if err != nil {
+		return err
+	}
+	fmt.Println(out)
+
+	return nil
+}
+
+func fetchMonitors(args []string) error {
+	r := make(resources.MonitorSlice, len(args))
+	for i, id := range args {
+		resource, err := service.Monitor(context.Background(), id)
+
+		if err != nil {
+			return handleResponseError(err)
+		}
+
+		r[i] = resource
+	}
+
+	out, err := describeMonitors(r)
+	if err != nil {
+		return err
+	}
+	fmt.Println(out)
+
+	return nil
+}
+
+func fetchWorkspaces(args []string) error {
+	r := make(resources.WorkspaceSlice, len(args))
+	for i, id := range args {
+		resource, err := service.Workspace(context.Background(), id)
+
+		if err != nil {
+			return handleResponseError(err)
+		}
+
+		r[i] = resource
+	}
+
+	out, err := describeWorkspaces(r)
+	if err != nil {
+		return err
+	}
+	fmt.Println(out)
+
+	return nil
+}
+
+func fetchAPIs(args []string) error {
+	r := make(resources.APISlice, len(args))
+	for i, id := range args {
+		resource, err := service.API(context.Background(), id)
+
+		if err != nil {
+			return handleResponseError(err)
+		}
+
+		r[i] = resource
+	}
+
+	out, err := describeAPIs(r)
+	if err != nil {
+		return err
+	}
+	fmt.Println(out)
+
+	return nil
+}
+
+func fetchAPIVersions(args []string) error {
+	ids := args[0:]
+
+	r := make(resources.APIVersionSlice, len(ids))
+	for i, id := range ids {
+		resource, err := service.APIVersion(context.Background(), forAPI, id)
+
+		if err != nil {
+			return handleResponseError(err)
+		}
+
+		r[i] = resource
+	}
+
+	out, err := describeAPIVersions(r)
+	if err != nil {
+		return err
+	}
+	fmt.Println(out)
+
+	return nil
+}
+
+func fetchAPIRelations(args []string) error {
+	resource, err := service.APIRelations(context.Background(), forAPI, forAPIVersion)
+
+	if err != nil {
+		return handleResponseError(err)
+	}
+
+	out, err := describeAPIRelations(resource)
+	if err != nil {
+		return err
+	}
+	fmt.Println(out)
+
+	return nil
+}
+
+func fetchSchema(args []string) error {
+	var id string
+	if len(args) == 0 {
+		version, err := service.APIVersion(context.Background(), forAPI, forAPIVersion)
+
+		if err != nil {
+			return handleResponseError(err)
+		}
+
+		if len(version.Schema) > 0 {
+			id = version.Schema[0]
+		}
+	} else {
+		id = args[0]
+	}
+
+	resource, err := service.Schema(context.Background(), forAPI, forAPIVersion, id)
+
+	if err != nil {
+		return handleResponseError(err)
+	}
+
+	out, err := describeSchema(resource)
+	if err != nil {
+		return err
+	}
+	fmt.Println(out)
 
 	return nil
 }
