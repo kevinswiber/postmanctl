@@ -16,8 +16,16 @@ limitations under the License.
 
 package main
 
-import "github.com/kevinswiber/postmanctl/internal/runtime/cmd"
+import (
+	"fmt"
+	"os"
+
+	"github.com/kevinswiber/postmanctl/internal/runtime/cmd"
+)
 
 func main() {
-	cmd.GenMarkdownTree("./doc")
+	err := cmd.GenMarkdownTree("./doc")
+	if err != nil {
+		fmt.Fprint(os.Stderr, err.Error())
+	}
 }

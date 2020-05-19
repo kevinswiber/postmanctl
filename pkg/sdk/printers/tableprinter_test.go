@@ -31,8 +31,7 @@ func TestTablePrinterPrintsCollectionListItems(t *testing.T) {
 	}
 	printer := printers.NewTablePrinter(options)
 
-	var collections resources.CollectionListItems
-	collections = []resources.CollectionListItem{
+	var collections resources.CollectionListItems = []resources.CollectionListItem{
 		{
 			ID:    "abcdef",
 			Name:  "test collection",
@@ -41,8 +40,7 @@ func TestTablePrinterPrintsCollectionListItems(t *testing.T) {
 		},
 	}
 
-	var formatter resources.Formatter
-	formatter = collections
+	var formatter resources.Formatter = collections
 
 	var b bytes.Buffer
 
@@ -52,7 +50,7 @@ func TestTablePrinterPrintsCollectionListItems(t *testing.T) {
 12345-abcdef   test collection
 `
 
-	actual := string(b.Bytes())
+	actual := b.String()
 	if expected != actual {
 		t.Errorf("Unexpected output, have: \"%s\", want: \"%s\"", actual, expected)
 	}
@@ -73,8 +71,7 @@ func TestTablePrinterPrintsCollection(t *testing.T) {
 		},
 	}
 
-	var formatter resources.Formatter
-	formatter = collection
+	var formatter resources.Formatter = collection
 
 	var b bytes.Buffer
 
@@ -84,7 +81,7 @@ func TestTablePrinterPrintsCollection(t *testing.T) {
 abcdef   test collection
 `
 
-	actual := string(b.Bytes())
+	actual := b.String()
 	if expected != actual {
 		t.Errorf("Unexpected output, have: \"%s\", want: \"%s\"", actual, expected)
 	}

@@ -67,15 +67,17 @@ func printGetOutput(r interface{}) {
 			os.Exit(1)
 		}
 
-		var queryObj interface{}
-		queryObj = map[string]interface{}{}
+		var queryObj interface{} = map[string]interface{}{}
 		if err := json.Unmarshal(t, &queryObj); err != nil {
 			fmt.Fprintf(os.Stderr, "error: %s\n", err)
 			os.Exit(1)
 		}
 
 		buf := bytes.NewBuffer(nil)
-		j.Execute(buf, queryObj)
+		err = j.Execute(buf, queryObj)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error: %s\n", err)
+		}
 
 		fmt.Println(buf)
 	} else if strings.HasPrefix(outputFormat.value, "go-template-file=") {
@@ -98,8 +100,7 @@ func printGetOutput(r interface{}) {
 			os.Exit(1)
 		}
 
-		var queryObj interface{}
-		queryObj = map[string]interface{}{}
+		var queryObj interface{} = map[string]interface{}{}
 		if err := json.Unmarshal(t, &queryObj); err != nil {
 			fmt.Fprintf(os.Stderr, "error: %s\n", err)
 			os.Exit(1)
@@ -113,8 +114,7 @@ func printGetOutput(r interface{}) {
 
 		fmt.Println(buf.String())
 	} else {
-		var f resources.Formatter
-		f = r.(resources.Formatter)
+		var f resources.Formatter = r.(resources.Formatter)
 		printTable(f)
 	}
 }

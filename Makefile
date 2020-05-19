@@ -13,13 +13,11 @@ build:
 		-X github.com/kevinswiber/postmanctl/internal/runtime/cmd.platform=$$GOPLATFORM \
 		" -o ./output/postmanctl ./cmd/postmanctl
 
-test: vet
-	$(info ******************** running tests ********************)
+test: lint
 	go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
 
-vet:
-	$(info ******************** vetting ********************)
-	go vet ./...
+lint:
+	golangci-lint run
 
 generate:
 	go generate ./...
@@ -41,4 +39,4 @@ doc:
 	go build -o ./output/genpostmanctldocs ./cmd/genpostmanctldocs
 	./output/genpostmanctldocs
 
-.PHONY: generate build install doc release release-snapshot vet
+.PHONY: generate build install doc release release-snapshot lint 

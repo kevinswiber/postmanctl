@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 
 	"github.com/kevinswiber/postmanctl/pkg/sdk/resources"
 )
@@ -204,8 +205,17 @@ func (r *Request) Do() (*http.Response, error) {
 		}
 
 		var e resources.ErrorResponse
-		json.Unmarshal(body, &e)
-		errorMessage := NewRequestError(resp.StatusCode, e.Error.Name, e.Error.Message, e.Error.Details)
+		if len(body) > 0 {
+			err = json.Unmarshal(body, &e)
+		}
+
+		var errorMessage *RequestError
+		if err == nil {
+			errorMessage = NewRequestError(resp.StatusCode, e.Error.Name, e.Error.Message, e.Error.Details)
+		} else {
+			msg := []string{err.Error(), e.Error.Message}
+			errorMessage = NewRequestError(resp.StatusCode, e.Error.Name, strings.Join(msg, " | "), e.Error.Details)
+		}
 		r.err = errorMessage
 		return nil, errorMessage
 	}

@@ -17,6 +17,7 @@ limitations under the License.
 package client_test
 
 import (
+	"context"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -24,6 +25,7 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/kevinswiber/postmanctl/pkg/sdk/client"
 )
@@ -44,9 +46,13 @@ func TestGetMethod(t *testing.T) {
 	options := client.NewOptions(u, "", http.DefaultClient)
 	req := client.NewRequest(options)
 
-	req.
+	_, err := req.
 		Get().
 		Do()
+
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func TestPost(t *testing.T) {
@@ -65,9 +71,13 @@ func TestPost(t *testing.T) {
 	options := client.NewOptions(u, "", http.DefaultClient)
 	req := client.NewRequest(options)
 
-	req.
+	_, err := req.
 		Post().
 		Do()
+
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func TestPut(t *testing.T) {
@@ -86,9 +96,13 @@ func TestPut(t *testing.T) {
 	options := client.NewOptions(u, "", http.DefaultClient)
 	req := client.NewRequest(options)
 
-	req.
+	_, err := req.
 		Put().
 		Do()
+
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func TestDelete(t *testing.T) {
@@ -107,9 +121,13 @@ func TestDelete(t *testing.T) {
 	options := client.NewOptions(u, "", http.DefaultClient)
 	req := client.NewRequest(options)
 
-	req.
+	_, err := req.
 		Delete().
 		Do()
+
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func TestMethod(t *testing.T) {
@@ -128,9 +146,13 @@ func TestMethod(t *testing.T) {
 	options := client.NewOptions(u, "", http.DefaultClient)
 	req := client.NewRequest(options)
 
-	req.
+	_, err := req.
 		Method("PATCH").
 		Do()
+
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func TestPath(t *testing.T) {
@@ -149,10 +171,14 @@ func TestPath(t *testing.T) {
 	options := client.NewOptions(u, "", http.DefaultClient)
 	req := client.NewRequest(options)
 
-	req.
+	_, err := req.
 		Get().
 		Path("one", "two", "three", "four").
 		Do()
+
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func TestAddHeader(t *testing.T) {
@@ -171,10 +197,14 @@ func TestAddHeader(t *testing.T) {
 	options := client.NewOptions(u, "", http.DefaultClient)
 	req := client.NewRequest(options)
 
-	req.
+	_, err := req.
 		Get().
 		AddHeader("Content-Type", "application/json").
 		Do()
+
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func TestParam(t *testing.T) {
@@ -194,10 +224,14 @@ func TestParam(t *testing.T) {
 	options := client.NewOptions(u, "", http.DefaultClient)
 	req := client.NewRequest(options)
 
-	req.
+	_, err := req.
 		Get().
 		Param("hello", "world").
 		Do()
+
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func TestParams(t *testing.T) {
@@ -217,10 +251,14 @@ func TestParams(t *testing.T) {
 	options := client.NewOptions(u, "", http.DefaultClient)
 	req := client.NewRequest(options)
 
-	req.
+	_, err := req.
 		Get().
 		Params(map[string]string{"hello": "world"}).
 		Do()
+
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func TestBody(t *testing.T) {
@@ -246,10 +284,14 @@ func TestBody(t *testing.T) {
 	req := client.NewRequest(options)
 
 	rdr := strings.NewReader(subject)
-	req.
+	_, err := req.
 		Get().
 		Body(rdr).
 		Do()
+
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func TestInto(t *testing.T) {
@@ -264,7 +306,11 @@ func TestInto(t *testing.T) {
 	subject := `{"hello":"world"}`
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		_, err := w.Write([]byte(subject))
+
+		if err != nil {
+			t.Error(err)
+		}
 	})
 
 	u, _ := url.Parse(server.URL)
@@ -272,10 +318,14 @@ func TestInto(t *testing.T) {
 	req := client.NewRequest(options)
 
 	var s subj
-	req.
+	_, err := req.
 		Get().
 		Into(&s).
 		Do()
+
+	if err != nil {
+		t.Error(err)
+	}
 
 	if s.Hello != "world" {
 		t.Errorf("Unexpected value, have: %s, want: %s", s.Hello, "world")
@@ -460,7 +510,11 @@ func TestUnmarshalErrorOn200StatusCode(t *testing.T) {
 	subject := `{"hello":}`
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		_, err := w.Write([]byte(subject))
+
+		if err != nil {
+			t.Error(err)
+		}
 	})
 
 	u, _ := url.Parse(server.URL)
@@ -475,5 +529,70 @@ func TestUnmarshalErrorOn200StatusCode(t *testing.T) {
 
 	if err == nil {
 		t.Error("Expected error.")
+	}
+}
+
+func TestUnmarshalErrorOnNon200StatusCode(t *testing.T) {
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	type subj struct {
+		Hello string `json:"hello"`
+	}
+
+	subject := `{"hello":}`
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+		_, err := w.Write([]byte(subject))
+
+		if err != nil {
+			t.Error(err)
+		}
+	})
+
+	u, _ := url.Parse(server.URL)
+	options := client.NewOptions(u, "", http.DefaultClient)
+	req := client.NewRequest(options)
+
+	var s subj
+	_, err := req.
+		Get().
+		Into(&s).
+		Do()
+
+	if err == nil {
+		t.Error("Expected error.")
+	} else if !strings.Contains(err.Error(), "invalid character '}' looking for beginning of value") {
+		t.Error("Expected unmarshal error.")
+	}
+}
+
+func TestContext(t *testing.T) {
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(5 * time.Millisecond)
+		w.WriteHeader(http.StatusOK)
+	})
+
+	u, _ := url.Parse(server.URL)
+	options := client.NewOptions(u, "", http.DefaultClient)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Millisecond)
+	defer cancel()
+
+	req := client.NewRequestWithContext(ctx, options)
+
+	_, err := req.
+		Get().
+		Do()
+
+	if err == nil {
+		t.Error("Expected error.")
+	} else if !strings.HasSuffix(err.Error(), "context deadline exceeded") {
+		t.Errorf("Unexpected error, have: %s, want: context deadline exceeded", err)
 	}
 }

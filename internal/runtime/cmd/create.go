@@ -86,11 +86,12 @@ func generateCreateSubcommand(t resources.ResourceType, use string, aliases []st
 func createResource(t resources.ResourceType) error {
 	if inputReader == nil {
 		r, err := os.Open(inputFile)
-		defer r.Close()
 
 		if err != nil {
 			return err
 		}
+
+		defer r.Close()
 
 		inputReader = r
 	}

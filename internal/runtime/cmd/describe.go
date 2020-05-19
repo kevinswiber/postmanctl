@@ -350,13 +350,17 @@ func describeCollections(r resources.CollectionSlice) (string, error) {
 
 			buf.WriteString(fmt.Sprintf("Variables:\t%s\n", strings.Join(variables, ", ")))
 
-			buf.WriteString(fmt.Sprint("Items:\n"))
+			buf.WriteString(fmt.Sprintln("Items:"))
 			tree := treeprint.New()
 			writeCollectionItemOrItemGroup(out, c.Items.Root, tree)
 			for _, s := range strings.Split(tree.String(), "\n") {
 				buf.WriteString(fmt.Sprintf("  %s\n", s))
 			}
-			buf.WriteTo(out)
+
+			if _, err := buf.WriteTo(out); err != nil {
+				return err
+			}
+
 		}
 		return nil
 	})
@@ -368,11 +372,13 @@ func describeEnvironments(r resources.EnvironmentSlice) (string, error) {
 			buf := new(bytes.Buffer)
 			buf.WriteString(fmt.Sprintf("ID:\t%s\n", e.ID))
 			buf.WriteString(fmt.Sprintf("Name:\t%s\n", e.Name))
-			buf.WriteString(fmt.Sprintf("Variables:\n"))
+			buf.WriteString(fmt.Sprintln("Variables:"))
 			for _, v := range e.Values {
 				buf.WriteString(fmt.Sprintf("  %s\n", v.Key))
 			}
-			buf.WriteTo(out)
+			if _, err := buf.WriteTo(out); err != nil {
+				return err
+			}
 		}
 		return nil
 	})
@@ -387,7 +393,7 @@ func describeMonitors(r resources.MonitorSlice) (string, error) {
 			buf.WriteString(fmt.Sprintf("Owner ID:\t%s\n", m.Owner))
 			buf.WriteString(fmt.Sprintf("Collection UID:\t%s\n", m.CollectionUID))
 			buf.WriteString(fmt.Sprintf("Environment UID:\t%s\n", m.EnvironmentUID))
-			buf.WriteString(fmt.Sprintf("Options:\n"))
+			buf.WriteString(fmt.Sprintln("Options:"))
 			buf.WriteString(fmt.Sprintf("  Strict SSL:\t%t\n", m.Options.StrictSSL))
 			buf.WriteString(fmt.Sprintf("  Follow Redirects:\t%t\n", m.Options.FollowRedirects))
 			requestTimeout := "<default>"
@@ -396,11 +402,13 @@ func describeMonitors(r resources.MonitorSlice) (string, error) {
 			}
 			buf.WriteString(fmt.Sprintf("  Request Timeout:\t%s\n", requestTimeout))
 			buf.WriteString(fmt.Sprintf("  Request Delay:\t%d\n", m.Options.RequestDelay))
-			buf.WriteString(fmt.Sprintf("Schedule:\n"))
+			buf.WriteString(fmt.Sprintln("Schedule:"))
 			buf.WriteString(fmt.Sprintf("  Cron:\t%s\n", m.Schedule.Cron))
 			buf.WriteString(fmt.Sprintf("  Time Zone:\t%s\n", m.Schedule.Timezone))
 			buf.WriteString(fmt.Sprintf("  Next Run:\t%s\n", m.Schedule.NextRun))
-			buf.WriteTo(out)
+			if _, err := buf.WriteTo(out); err != nil {
+				return err
+			}
 		}
 		return nil
 	})
@@ -416,11 +424,13 @@ func describeMocks(r resources.MockSlice) (string, error) {
 			buf.WriteString(fmt.Sprintf("Collection UID:\t%s\n", m.Collection))
 			buf.WriteString(fmt.Sprintf("Environment UID:\t%s\n", m.Environment))
 			buf.WriteString(fmt.Sprintf("Mock URL:\t%s\n", m.MockURL))
-			buf.WriteString(fmt.Sprintf("Config:\n"))
+			buf.WriteString(fmt.Sprintln("Config:"))
 			buf.WriteString(fmt.Sprintf("  Match Body:\t%t\n", m.Config.MatchBody))
 			buf.WriteString(fmt.Sprintf("  Match Query Params:\t%t\n", m.Config.MatchQueryParams))
 			buf.WriteString(fmt.Sprintf("  Match Wildcards:\t%t\n", m.Config.MatchWildcards))
-			buf.WriteTo(out)
+			if _, err := buf.WriteTo(out); err != nil {
+				return err
+			}
 		}
 		return nil
 	})
@@ -433,11 +443,13 @@ func describeWorkspaces(r resources.WorkspaceSlice) (string, error) {
 			buf.WriteString(fmt.Sprintf("ID:\t%s\n", m.ID))
 			buf.WriteString(fmt.Sprintf("Name:\t%s\n", m.Name))
 			buf.WriteString(fmt.Sprintf("Type:\t%s\n", m.Type))
-			buf.WriteString(fmt.Sprintf("Collections:\n"))
+			buf.WriteString(fmt.Sprintln("Collections:"))
 			for _, c := range m.Collections {
 				buf.WriteString(fmt.Sprintf("  %s (%s)\n", c.Name, c.ID))
 			}
-			buf.WriteTo(out)
+			if _, err := buf.WriteTo(out); err != nil {
+				return err
+			}
 		}
 		return nil
 	})
@@ -447,7 +459,9 @@ func describeUser(r *resources.User) (string, error) {
 	return tabbedString(func(out io.Writer) error {
 		buf := new(bytes.Buffer)
 		buf.WriteString(fmt.Sprintf("ID:\t%s\n", r.ID))
-		buf.WriteTo(out)
+		if _, err := buf.WriteTo(out); err != nil {
+			return err
+		}
 		return nil
 	})
 }
@@ -462,7 +476,9 @@ func describeAPIs(r resources.APISlice) (string, error) {
 			buf.WriteString(fmt.Sprintf("Created At:\t%s\n", m.CreatedAt))
 			buf.WriteString(fmt.Sprintf("Updated By:\t%s\n", m.UpdatedBy))
 			buf.WriteString(fmt.Sprintf("Updated By:\t%s\n", m.UpdatedAt))
-			buf.WriteTo(out)
+			if _, err := buf.WriteTo(out); err != nil {
+				return err
+			}
 		}
 		return nil
 	})
@@ -480,7 +496,9 @@ func describeAPIVersions(r resources.APIVersionSlice) (string, error) {
 			buf.WriteString(fmt.Sprintf("Created At:\t%s\n", m.CreatedAt))
 			buf.WriteString(fmt.Sprintf("Updated By:\t%s\n", m.UpdatedBy))
 			buf.WriteString(fmt.Sprintf("Updated By:\t%s\n", m.UpdatedAt))
-			buf.WriteTo(out)
+			if _, err := buf.WriteTo(out); err != nil {
+				return err
+			}
 		}
 		return nil
 	})
@@ -491,69 +509,71 @@ func describeAPIRelations(r *resources.APIRelations) (string, error) {
 		buf := new(bytes.Buffer)
 
 		if len(r.Mock) > 0 {
-			buf.WriteString(fmt.Sprintf("Mock Servers:\n"))
+			buf.WriteString(fmt.Sprintln("Mock Servers:"))
 			for _, s := range r.Mock {
-				buf.WriteString(fmt.Sprintf("  UID\tName\tCreated At\tUpdated At\tURL\n"))
-				buf.WriteString(fmt.Sprintf("  ---\t----\t----------\t----------\t---\n"))
+				buf.WriteString(fmt.Sprintln("  UID\tName\tCreated At\tUpdated At\tURL"))
+				buf.WriteString(fmt.Sprintln("  ---\t----\t----------\t----------\t---"))
 				buf.WriteString(fmt.Sprintf("  %s\t%s\t%s\t%s\t%s\n", s.ID, s.Name, s.CreatedAt, s.UpdatedAt, s.URL))
 			}
 		}
 
 		if len(r.Documentation) > 0 {
-			buf.WriteString(fmt.Sprintf("Documentation:\n"))
+			buf.WriteString(fmt.Sprintln("Documentation:"))
 			for _, s := range r.Documentation {
-				buf.WriteString(fmt.Sprintf("  UID\tName\tCreated At\tUpdated At\n"))
-				buf.WriteString(fmt.Sprintf("  ---\t----\t----------\t----------\n"))
+				buf.WriteString(fmt.Sprintln("  UID\tName\tCreated At\tUpdated At"))
+				buf.WriteString(fmt.Sprintln("  ---\t----\t----------\t----------"))
 				buf.WriteString(fmt.Sprintf("  %s\t%s\t%s\t%s\n", s.ID, s.Name, s.CreatedAt, s.UpdatedAt))
 			}
 		}
 
 		if len(r.Environment) > 0 {
-			buf.WriteString(fmt.Sprintf("Environments:\n"))
+			buf.WriteString(fmt.Sprintln("Environments:"))
 			for _, s := range r.Environment {
-				buf.WriteString(fmt.Sprintf("  UID\tName\tCreated At\tUpdated At\n"))
-				buf.WriteString(fmt.Sprintf("  ---\t----\t----------\t----------\n"))
+				buf.WriteString(fmt.Sprintln("  UID\tName\tCreated At\tUpdated At"))
+				buf.WriteString(fmt.Sprintln("  ---\t----\t----------\t----------"))
 				buf.WriteString(fmt.Sprintf("  %s\t%s\t%s\t%s\n", s.ID, s.Name, s.CreatedAt, s.UpdatedAt))
 			}
 		}
 
 		if len(r.TestSuite) > 0 {
-			buf.WriteString(fmt.Sprintf("Test Suites:\n"))
+			buf.WriteString(fmt.Sprintln("Test Suites:"))
 			for _, s := range r.TestSuite {
-				buf.WriteString(fmt.Sprintf("  UID\tName\tCreated At\tUpdated At\n"))
-				buf.WriteString(fmt.Sprintf("  ---\t----\t----------\t----------\n"))
+				buf.WriteString(fmt.Sprintln("  UID\tName\tCreated At\tUpdated At"))
+				buf.WriteString(fmt.Sprintln("  ---\t----\t----------\t----------"))
 				buf.WriteString(fmt.Sprintf("  %s\t%s\t%s\t%s\n", s.ID, s.Name, s.CreatedAt, s.UpdatedAt))
 			}
 		}
 
 		if len(r.IntegrationTest) > 0 {
-			buf.WriteString(fmt.Sprintf("Integration Tests:\n"))
+			buf.WriteString(fmt.Sprintln("Integration Tests:"))
 			for _, s := range r.IntegrationTest {
-				buf.WriteString(fmt.Sprintf("  UID\tName\tCreated At\tUpdated At\n"))
-				buf.WriteString(fmt.Sprintf("  ---\t----\t----------\t----------\n"))
+				buf.WriteString(fmt.Sprintln("  UID\tName\tCreated At\tUpdated At"))
+				buf.WriteString(fmt.Sprintln("  ---\t----\t----------\t----------"))
 				buf.WriteString(fmt.Sprintf("  %s\t%s\t%s\t%s\n", s.ID, s.Name, s.CreatedAt, s.UpdatedAt))
 			}
 		}
 
 		if len(r.ContractTest) > 0 {
-			buf.WriteString(fmt.Sprintf("Contract Tests:\n"))
+			buf.WriteString(fmt.Sprintln("Contract Tests:"))
 			for _, s := range r.ContractTest {
-				buf.WriteString(fmt.Sprintf("  UID\tName\tCreated At\tUpdated At\n"))
-				buf.WriteString(fmt.Sprintf("  ---\t----\t----------\t----------\n"))
+				buf.WriteString(fmt.Sprintln("  UID\tName\tCreated At\tUpdated At"))
+				buf.WriteString(fmt.Sprintln("  ---\t----\t----------\t----------"))
 				buf.WriteString(fmt.Sprintf("  %s\t%s\t%s\t%s\n", s.ID, s.Name, s.CreatedAt, s.UpdatedAt))
 			}
 		}
 
 		if len(r.Monitor) > 0 {
-			buf.WriteString(fmt.Sprintf("Monitors:\n"))
+			buf.WriteString(fmt.Sprintln("Monitors:"))
 			for _, s := range r.Monitor {
-				buf.WriteString(fmt.Sprintf("  UID\tName\tCreated At\tUpdated At\n"))
-				buf.WriteString(fmt.Sprintf("  ---\t----\t----------\t----------\n"))
+				buf.WriteString(fmt.Sprintln("  UID\tName\tCreated At\tUpdated At"))
+				buf.WriteString(fmt.Sprintln("  ---\t----\t----------\t----------"))
 				buf.WriteString(fmt.Sprintf("  %s\t%s\t%s\t%s\n", s.ID, s.Name, s.CreatedAt, s.UpdatedAt))
 			}
 		}
 
-		buf.WriteTo(out)
+		if _, err := buf.WriteTo(out); err != nil {
+			return err
+		}
 		return nil
 	})
 }
@@ -570,7 +590,9 @@ func describeSchema(r *resources.Schema) (string, error) {
 		buf.WriteString(fmt.Sprintf("Type:\t%s\n", r.Type))
 		buf.WriteString(fmt.Sprintf("Language:\t%s\n", r.Language))
 		buf.WriteString(fmt.Sprintf("\nSchema:\n\n%s\n", r.Schema))
-		buf.WriteTo(out)
+		if _, err := buf.WriteTo(out); err != nil {
+			return err
+		}
 		return nil
 	})
 }

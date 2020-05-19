@@ -47,7 +47,9 @@ func TestDeleteCollection(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodDelete)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, deleteMux, path)
@@ -94,7 +96,9 @@ func TestDeleteMissingIDCondition(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodDelete)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, deleteMux, path)
@@ -121,7 +125,9 @@ func TestDeleteMissingResponseValueCondition(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodDelete)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, deleteMux, path)
@@ -148,7 +154,9 @@ func TestDeleteEnvironment(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodDelete)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, deleteMux, path)
@@ -175,7 +183,9 @@ func TestDeleteMock(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodDelete)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, deleteMux, path)
@@ -202,7 +212,9 @@ func TestDeleteMonitor(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodDelete)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, deleteMux, path)
@@ -229,7 +241,9 @@ func TestDeleteWorkspace(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodDelete)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, deleteMux, path)
@@ -256,7 +270,9 @@ func TestDeleteAPI(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodDelete)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, deleteMux, path)
@@ -283,7 +299,9 @@ func TestDeleteAPIVersion(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodDelete)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, deleteMux, path)
@@ -317,7 +335,9 @@ func TestDeleteSchema(t *testing.T) {
 			t.Errorf("Method is incorrect, have: %s, want: %s", r.Method, http.MethodDelete)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(subject))
+		if _, err := w.Write([]byte(subject)); err != nil {
+			t.Error(err)
+		}
 	})
 
 	ensurePath(t, deleteMux, path)
