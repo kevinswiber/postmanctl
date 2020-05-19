@@ -167,7 +167,7 @@ func (s *Service) CreateFromReader(ctx context.Context, t resources.ResourceType
 		}{
 			Environment: v,
 		}
-		requestBody, err = json.Marshal(c)
+		requestBody, _ = json.Marshal(c)
 	case resources.MockType:
 		path = []string{"mocks"}
 		responseValueKey = "mock"
