@@ -23,10 +23,12 @@ Available Commands:
   merge       Merge a fork of a Postman resource.
   replace     Replace existing Postman resources.
   run         Execute runnable Postman resources.
+  version     Print version information for postmanctl.
 
 Flags:
-      --config string   config file (default is $HOME/.postmanctl.yaml)
-  -h, --help            help for postmanctl
+      --config string    config file (default is $HOME/.postmanctl.yaml)
+      --context string   context to use, overrides the current context in the config file
+  -h, --help             help for postmanctl
 
 Use "postmanctl [command] --help" for more information about a command.
 ```

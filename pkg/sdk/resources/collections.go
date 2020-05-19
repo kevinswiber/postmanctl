@@ -51,7 +51,7 @@ func (c *Collection) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// CollectionListResponse is the top-level struct represenation of a collection
+// CollectionListResponse is the top-level struct representation of a collection
 // list response in the Postman API.
 type CollectionListResponse struct {
 	Collections CollectionListItems `json:"collections"`
