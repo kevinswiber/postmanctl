@@ -66,7 +66,7 @@ func init() {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 0 {
 				params := append([]string{forAPI}, args...)
-				return getIndividualResources(resources.APIVersionType, params...)
+				return getIndividualAPIVersions(params)
 			}
 
 			return getAllResources(resources.APIVersionType, forAPI)
@@ -92,7 +92,7 @@ func init() {
 				}
 			}
 			params = append(params, args...)
-			return getIndividualResources(resources.SchemaType, params...)
+			return getIndividualSchema(params)
 		},
 	}
 
@@ -121,19 +121,19 @@ func init() {
 	userCmd := &cobra.Command{
 		Use: "user",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return getIndividualResources(resources.UserType)
+			return getIndividualUser(args)
 		},
 	}
 
-	apisCmd := generateGetSubcommand(resources.APIType, "apis", []string{"api"})
+	apisCmd := generateGetSubcommand(resources.APIType, "apis", []string{"api"}, getIndividualAPIs)
 	apisCmd.Flags().StringVar(&usingWorkspace, "workspace", "", "the associated workspace ID")
 
 	getCmd.AddCommand(
-		generateGetSubcommand(resources.CollectionType, "collections", []string{"collection", "co"}),
-		generateGetSubcommand(resources.EnvironmentType, "environments", []string{"environment", "env"}),
-		generateGetSubcommand(resources.MonitorType, "monitors", []string{"monitor", "mon"}),
-		generateGetSubcommand(resources.MockType, "mocks", []string{"mock"}),
-		generateGetSubcommand(resources.WorkspaceType, "workspaces", []string{"workspace", "ws"}),
+		generateGetSubcommand(resources.CollectionType, "collections", []string{"collection", "co"}, getIndividualCollections),
+		generateGetSubcommand(resources.EnvironmentType, "environments", []string{"environment", "env"}, getIndividualEnvironments),
+		generateGetSubcommand(resources.MonitorType, "monitors", []string{"monitor", "mon"}, getIndividualMonitors),
+		generateGetSubcommand(resources.MockType, "mocks", []string{"mock"}, getIndividualMocks),
+		generateGetSubcommand(resources.WorkspaceType, "workspaces", []string{"workspace", "ws"}, getIndividualWorkspaces),
 		userCmd,
 		apisCmd,
 		apiVersionsCmd,
@@ -145,13 +145,13 @@ func init() {
 	rootCmd.AddCommand(getCmd)
 }
 
-func generateGetSubcommand(t resources.ResourceType, use string, aliases []string) *cobra.Command {
+func generateGetSubcommand(t resources.ResourceType, use string, aliases []string, fn func(args []string) error) *cobra.Command {
 	return &cobra.Command{
 		Use:     use,
 		Aliases: aliases,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 0 {
-				return getIndividualResources(t, args...)
+				return fn(args)
 			}
 
 			return getAllResources(t)
@@ -193,125 +193,151 @@ func getAllResources(resourceType resources.ResourceType, args ...string) error 
 	return nil
 }
 
-func getIndividualResources(resourceType resources.ResourceType, args ...string) error {
-	switch resourceType {
-	case resources.CollectionType:
-		r := make(resources.CollectionSlice, len(args))
-		for i, id := range args {
-			resource, err := service.Collection(context.Background(), id)
-
-			if err != nil {
-				return handleResponseError(err)
-			}
-
-			r[i] = resource
-		}
-
-		printGetOutput(r)
-	case resources.EnvironmentType:
-		r := make(resources.EnvironmentSlice, len(args))
-		for i, id := range args {
-			resource, err := service.Environment(context.Background(), id)
-
-			if err != nil {
-				return handleResponseError(err)
-			}
-
-			r[i] = resource
-		}
-
-		printGetOutput(r)
-	case resources.MockType:
-		r := make(resources.MockSlice, len(args))
-		for i, id := range args {
-			resource, err := service.Mock(context.Background(), id)
-
-			if err != nil {
-				return handleResponseError(err)
-			}
-
-			r[i] = resource
-		}
-
-		printGetOutput(r)
-	case resources.MonitorType:
-		r := make(resources.MonitorSlice, len(args))
-		for i, id := range args {
-			resource, err := service.Monitor(context.Background(), id)
-
-			if err != nil {
-				return handleResponseError(err)
-			}
-
-			r[i] = resource
-		}
-
-		printGetOutput(r)
-	case resources.APIType:
-		r := make(resources.APISlice, len(args))
-		for i, id := range args {
-			resource, err := service.API(context.Background(), id)
-
-			if err != nil {
-				return handleResponseError(err)
-			}
-
-			r[i] = resource
-		}
-
-		printGetOutput(r)
-	case resources.APIVersionType:
-		apiID := args[0]
-		ids := args[1:]
-
-		r := make(resources.APIVersionSlice, len(ids))
-		for i, id := range ids {
-			resource, err := service.APIVersion(context.Background(), apiID, id)
-
-			if err != nil {
-				return handleResponseError(err)
-			}
-
-			r[i] = resource
-		}
-
-		printGetOutput(r)
-	case resources.WorkspaceType:
-		r := make(resources.WorkspaceSlice, len(args))
-		for i, id := range args {
-			resource, err := service.Workspace(context.Background(), id)
-
-			if err != nil {
-				return handleResponseError(err)
-			}
-
-			r[i] = resource
-		}
-
-		printGetOutput(r)
-	case resources.UserType:
-		resource, err := service.User(context.Background())
+func getIndividualCollections(args []string) error {
+	r := make(resources.CollectionSlice, len(args))
+	for i, id := range args {
+		resource, err := service.Collection(context.Background(), id)
 
 		if err != nil {
 			return handleResponseError(err)
 		}
 
-		printGetOutput(resource)
-	case resources.SchemaType:
-		apiID := args[0]
-		apiVersionID := args[1]
-		id := args[2]
-
-		resource, err := service.Schema(context.Background(), apiID, apiVersionID, id)
-
-		if err != nil {
-			return handleResponseError(err)
-		}
-
-		printGetOutput(resource)
-	default:
-		return fmt.Errorf("invalid resource type: %s", resourceType.String())
+		r[i] = resource
 	}
+
+	printGetOutput(r)
+
+	return nil
+}
+
+func getIndividualEnvironments(args []string) error {
+	r := make(resources.EnvironmentSlice, len(args))
+	for i, id := range args {
+		resource, err := service.Environment(context.Background(), id)
+
+		if err != nil {
+			return handleResponseError(err)
+		}
+
+		r[i] = resource
+	}
+
+	printGetOutput(r)
+
+	return nil
+}
+
+func getIndividualMocks(args []string) error {
+	r := make(resources.MockSlice, len(args))
+	for i, id := range args {
+		resource, err := service.Mock(context.Background(), id)
+
+		if err != nil {
+			return handleResponseError(err)
+		}
+
+		r[i] = resource
+	}
+
+	printGetOutput(r)
+
+	return nil
+}
+
+func getIndividualMonitors(args []string) error {
+	r := make(resources.MonitorSlice, len(args))
+	for i, id := range args {
+		resource, err := service.Monitor(context.Background(), id)
+
+		if err != nil {
+			return handleResponseError(err)
+		}
+
+		r[i] = resource
+	}
+
+	printGetOutput(r)
+
+	return nil
+}
+
+func getIndividualAPIs(args []string) error {
+	r := make(resources.APISlice, len(args))
+	for i, id := range args {
+		resource, err := service.API(context.Background(), id)
+
+		if err != nil {
+			return handleResponseError(err)
+		}
+
+		r[i] = resource
+	}
+
+	printGetOutput(r)
+
+	return nil
+}
+
+func getIndividualAPIVersions(args []string) error {
+	apiID := args[0]
+	ids := args[1:]
+
+	r := make(resources.APIVersionSlice, len(ids))
+	for i, id := range ids {
+		resource, err := service.APIVersion(context.Background(), apiID, id)
+
+		if err != nil {
+			return handleResponseError(err)
+		}
+
+		r[i] = resource
+	}
+
+	printGetOutput(r)
+
+	return nil
+}
+func getIndividualWorkspaces(args []string) error {
+	r := make(resources.WorkspaceSlice, len(args))
+	for i, id := range args {
+		resource, err := service.Workspace(context.Background(), id)
+
+		if err != nil {
+			return handleResponseError(err)
+		}
+
+		r[i] = resource
+	}
+
+	printGetOutput(r)
+
+	return nil
+}
+
+func getIndividualUser(args []string) error {
+	resource, err := service.User(context.Background())
+
+	if err != nil {
+		return handleResponseError(err)
+	}
+
+	printGetOutput(resource)
+
+	return nil
+}
+
+func getIndividualSchema(args []string) error {
+	apiID := args[0]
+	apiVersionID := args[1]
+	id := args[2]
+
+	resource, err := service.Schema(context.Background(), apiID, apiVersionID, id)
+
+	if err != nil {
+		return handleResponseError(err)
+	}
+
+	printGetOutput(resource)
 
 	return nil
 }
