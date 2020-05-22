@@ -5,7 +5,7 @@ build:
 	DATE=$(shell date -u +%Y-%m-%dT%H:%M:%SZ); \
 	GOVERSION=$(shell go version | awk '{print $$3}'); \
 	GOPLATFORM=$(shell go version | awk '{print $$4}'); \
-	go build -ldflags "\
+	go build -ldflags "-s -w \
 		-X github.com/kevinswiber/postmanctl/internal/runtime/cmd.version=v0.1.0-dev.$$GITBRANCH+$$GITCOMMIT \
 		-X github.com/kevinswiber/postmanctl/internal/runtime/cmd.commit=$$GITCOMMIT \
 		-X github.com/kevinswiber/postmanctl/internal/runtime/cmd.date=$$DATE \
