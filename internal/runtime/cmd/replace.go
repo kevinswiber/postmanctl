@@ -117,7 +117,7 @@ func replaceResource(t resources.ResourceType, resourceID string) error {
 	case resources.APIVersionType:
 		id, err = service.ReplaceAPIVersionFromReader(ctx, inputReader, forAPI, resourceID)
 	case resources.SchemaType:
-		id, err = service.ReplaceSchemaFromReader(ctx, inputReader, forAPI, forAPIVersion, resourceID)
+		id, err = service.ReplaceSchemaFromReader(ctx, inputReader, resourceID, forAPI, forAPIVersion)
 	}
 
 	if err != nil {
