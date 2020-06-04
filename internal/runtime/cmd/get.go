@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/kevinswiber/postmanctl/pkg/sdk/resources"
@@ -89,6 +90,9 @@ func init() {
 
 				if len(version.Schema) > 0 {
 					params = append(params, version.Schema[0])
+				} else {
+					fmt.Fprintln(os.Stderr, "error: no schema has been associated with this API version")
+					os.Exit(1)
 				}
 			}
 			params = append(params, args...)
