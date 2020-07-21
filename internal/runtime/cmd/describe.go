@@ -444,8 +444,32 @@ func describeWorkspaces(r resources.WorkspaceSlice) (string, error) {
 			buf.WriteString(fmt.Sprintf("Name:\t%s\n", m.Name))
 			buf.WriteString(fmt.Sprintf("Type:\t%s\n", m.Type))
 			buf.WriteString(fmt.Sprintln("Collections:"))
+			if len(m.Collections) == 0 {
+				buf.WriteString(fmt.Sprintln("  <none>"))
+			}
 			for _, c := range m.Collections {
 				buf.WriteString(fmt.Sprintf("  %s (%s)\n", c.Name, c.ID))
+			}
+			buf.WriteString(fmt.Sprintln("Environments:"))
+			if len(m.Environments) == 0 {
+				buf.WriteString(fmt.Sprintln("  <none>"))
+			}
+			for _, e := range m.Environments {
+				buf.WriteString(fmt.Sprintf("  %s (%s)\n", e.Name, e.ID))
+			}
+			buf.WriteString(fmt.Sprintln("Mocks:"))
+			if len(m.Mocks) == 0 {
+				buf.WriteString(fmt.Sprintln("  <none>"))
+			}
+			for _, c := range m.Mocks {
+				buf.WriteString(fmt.Sprintf("  %s\n", c.ID))
+			}
+			buf.WriteString(fmt.Sprintln("Monitors:"))
+			if len(m.Monitors) == 0 {
+				buf.WriteString(fmt.Sprintln("  <none>"))
+			}
+			for _, n := range m.Monitors {
+				buf.WriteString(fmt.Sprintf("  %s\n", n.ID))
 			}
 			if _, err := buf.WriteTo(out); err != nil {
 				return err
