@@ -51,11 +51,14 @@ type WorkspaceResponse struct {
 // Workspace represents the single workspace response from the
 // Postman API
 type Workspace struct {
-	ID          string              `json:"id"`
-	Name        string              `json:"name"`
-	Type        string              `json:"type"`
-	Description string              `json:"description"`
-	Collections CollectionListItems `json:"collections"`
+	ID           string                         `json:"id"`
+	Name         string                         `json:"name"`
+	Type         string                         `json:"type"`
+	Description  string                         `json:"description"`
+	Collections  []WorkspaceCollectionListItem  `json:"collections"`
+	Environments []WorkspaceEnvironmentListItem `json:"environments"`
+	Mocks        []WorkspaceMockListItem        `json:"mocks"`
+	Monitors     []WorkspaceMonitorListItem     `json:"monitors"`
 }
 
 // Format returns column headers and values for the resource.
@@ -77,4 +80,28 @@ func (r WorkspaceSlice) Format() ([]string, []interface{}) {
 	}
 
 	return []string{"ID", "Name", "Type"}, s
+}
+
+// WorkspaceCollectionListItem represents a single collection item in a Workspace.
+type WorkspaceCollectionListItem struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	UID  string `json:"uid"`
+}
+
+// WorkspaceEnvironmentListItem represents a single environment item in a Workspace.
+type WorkspaceEnvironmentListItem struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	UID  string `json:"uid"`
+}
+
+// WorkspaceMockListItem represents a single mock item in a Workspace.
+type WorkspaceMockListItem struct {
+	ID string `json:"id"`
+}
+
+// WorkspaceMonitorListItem represents a single monitor item in a Workspace.
+type WorkspaceMonitorListItem struct {
+	ID string `json:"id"`
 }
